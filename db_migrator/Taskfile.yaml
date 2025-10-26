@@ -1,0 +1,30 @@
+version: "3"
+
+tasks:
+  docker_build:
+    aliases:
+      - db
+    cmds:
+      - docker build -t migrator_service:latest .
+    desc: Build the Docker image for the migrator service
+  apply_migration:
+    aliases:
+      - am
+    preconditions:
+      - test -d ./migrations
+    env:
+      MIGRATIONS_PATH: "./migrations"
+    cmds:
+      - cargo run --bin migrator_service
+    desc: Apply database migrations
+  revert_migration:
+    aliases:
+      - rm
+    preconditions:
+      - test -d ./migrations
+    env:
+      MIGRATIONS_PATH: "./migrations"
+      IS_REVERT: "true"
+    cmds:
+      - cargo run --bin migrator_service
+    desc: Revert database migrations
