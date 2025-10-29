@@ -3,6 +3,7 @@ use axum::Json;
 use axum::response::IntoResponse;
 use axum_extra::extract::JsonDeserializerRejection;
 use serde_json::json;
+use validator::{ValidationError, ValidationErrors};
 use crate::features::common::api_error::{ApiError, Response};
 
 #[derive(thiserror::Error, Debug)]
@@ -26,7 +27,6 @@ pub enum RefreshTokenErrorResponse {
     MissingRefreshToken,
     #[error("Refresh token expired or invalid")]
     RefreshTokenInvalid,
-
 }
 impl IntoResponse for RefreshTokenErrorResponse {
     fn into_response(self) -> axum::response::Response {
@@ -78,7 +78,7 @@ impl ApiError for RefreshTokenErrorResponse {
                 StatusCode::UNAUTHORIZED,
                 "REFRESH_TOKEN_INVALID".to_string(),
                 self.to_string(),
-            )
+            ),
 
         };
         Response {

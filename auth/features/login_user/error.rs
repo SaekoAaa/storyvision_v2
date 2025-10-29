@@ -3,6 +3,7 @@ use axum::Json;
 use axum::response::IntoResponse;
 use axum_extra::extract::JsonDeserializerRejection;
 use serde_json::json;
+use validator::{ValidationError, ValidationErrors};
 use crate::features::common::api_error::{ApiError, Response};
 
 #[derive(thiserror::Error, Debug)]
@@ -26,6 +27,8 @@ pub enum LoginErrorResponse {
     LoginError(#[from] LoginError),
     #[error("Failed to deserialize JSON: {0}")]
     JsonDeserializationError(#[from] JsonDeserializerRejection),
+    #[error("Validation error: {0}")]
+    ValidationError(#[from] ValidationErrors),
 }
 impl IntoResponse for LoginErrorResponse {
     fn into_response(self) -> axum::response::Response {
@@ -65,6 +68,11 @@ impl ApiError for LoginErrorResponse {
                 "INVALID_JSON".to_string(),
                 "The provided JSON body is invalid or malformed.".to_string(),
             ),
+            Self::ValidationError(e) => (
+                StatusCode::BAD_REQUEST,
+                "VALIDATION_ERROR".to_string(),
+                e.to_string(),
+                )
         };
         Response {
             status,

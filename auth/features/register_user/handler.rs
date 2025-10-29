@@ -1,4 +1,6 @@
 use axum::debug_handler;
+use serde_json::{json, Value};
+use validator::{Validate, ValidationErrors};
 use {
     crate::{
         constants::REFRESH_TOKEN_ACCESS_PATH,
@@ -31,6 +33,27 @@ use {
 #[openapi(paths(handler_register_user))]
 pub struct RegisterUserOpenApi;
 
+fn validation_errors_to_json(errors: ValidationErrors) -> Value {
+    let mut map = serde_json::Map::new();
+
+    for (field, kind) in errors.field_errors().iter() {
+        let messages: Vec<String> = kind
+            .iter()
+            .map(|e| {
+                if let Some(msg) = &e.message {
+                    msg.to_string()
+                } else {
+                    format!("validation failed on constraint: {:?}", e.code)
+                }
+            })
+            .collect();
+
+        map.insert(field.to_string(), json!(messages));
+    }
+
+    Value::Object(map)
+}
+
 #[utoipa::path(
     post,
     path = "/register",
@@ -48,7 +71,9 @@ pub async fn handler_register_user(
     jar: CookieJar,
     serial_data: JsonDeserializer<RegisterUserRequest<'_>>,
 ) -> HandlerResult<impl IntoResponse, RegisterErrorResponse> {
-    let RegisterUserRequest { email, password } = serial_data.deserialize()?;
+    let register_user_request = serial_data.deserialize()?;
+    register_user_request.validate().map_err(|e| RegisterErrorResponse::ValidationError(validation_errors_to_json(e)))?;
+    let RegisterUserRequest { email, password } = register_user_request;
     let register_data = register_user(
         &app_state.pool,
         &email,

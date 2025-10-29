@@ -1,3 +1,4 @@
+use validator::{ValidationError, ValidationErrors};
 use {
     crate::features::common::api_error::{ApiError, Response},
     axum::{http::StatusCode, response::IntoResponse, Json},
@@ -15,6 +16,7 @@ pub enum RegisterError {
     PasswordHashingError(#[from] argon2::password_hash::Error),
     #[error("JWT error: {0}")]
     JsonWebTokenError(#[from] jsonwebtoken::errors::Error),
+
 }
 #[derive(Debug, thiserror::Error)]
 pub enum RegisterErrorResponse {
@@ -22,6 +24,8 @@ pub enum RegisterErrorResponse {
     RegisterError(#[from] RegisterError),
     #[error("Failed to deserialize JSON: {0}")]
     JsonDeserializationError(#[from] JsonDeserializerRejection),
+    #[error("Validation error: {0}")]
+    ValidationError(serde_json::Value),
 }
 
 impl IntoResponse for RegisterErrorResponse {
@@ -61,6 +65,7 @@ impl ApiError for RegisterErrorResponse {
                     "JWT_ERROR".to_string(),
                     "Failed to validate or decode JWT token.".to_string(),
                 ),
+
             },
 
             Self::JsonDeserializationError(_) => (
@@ -68,6 +73,11 @@ impl ApiError for RegisterErrorResponse {
                 "INVALID_JSON".to_string(),
                 "The provided JSON body is invalid or malformed.".to_string(),
             ),
+            Self::ValidationError(e) => (
+                StatusCode::BAD_REQUEST,
+                "VALIDATION_ERROR".to_string(),
+                e.to_string(),
+            )
         };
         Response {
             status,

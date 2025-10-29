@@ -8,6 +8,7 @@ use axum_extra::extract::{CookieJar, JsonDeserializer};
 use axum_extra::extract::cookie::Cookie;
 use time::Duration;
 use utoipa::OpenApi;
+use validator::Validate;
 use crate::constants::REFRESH_TOKEN_ACCESS_PATH;
 use crate::features::common::api_response::HandlerResult;
 use crate::features::common::AuthState;
@@ -42,7 +43,9 @@ pub async fn handler_login_user(
     jar: CookieJar,
     serial_data: JsonDeserializer<LoginUserRequest<'_>>,
 ) -> HandlerResult<impl IntoResponse, LoginErrorResponse> {
-    let LoginUserRequest { email, password } = serial_data.deserialize()?;
+    let login_user_request = serial_data.deserialize()?;
+    login_user_request.validate()?;
+    let LoginUserRequest { email, password } = login_user_request;
     let LoginData {
         id,
         refresh_token,
@@ -65,7 +68,7 @@ pub async fn handler_login_user(
             .max_age(Duration::days(15))
             .build(),
     );
-    HandlerResult::Ok((
+    Ok((
         StatusCode::OK,
         token_jar,
         Json::from(LoginUserResponse {
