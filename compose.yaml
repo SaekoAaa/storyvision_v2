@@ -1,0 +1,31 @@
+services:
+  mysql:
+    container_name: storyvision_db
+    image: mysql:latest
+    restart: always
+    ports:
+      - 3306:3306
+    # volumes:
+    #   - mysql_data:/var/lib/mysql
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 3
+volumes:
+  mysql_data:

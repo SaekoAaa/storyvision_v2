@@ -1,0 +1,8 @@
+version: "3"
+tasks:
+  docker_build_migrator:
+    aliases:
+      - db_migrator
+    cmds:
+      - docker build -f db_migrator/Dockerfile -t db_migrator .
+    desc: Build the Docker image for the database migrator service.
