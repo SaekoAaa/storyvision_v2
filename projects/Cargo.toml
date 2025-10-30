@@ -1,0 +1,44 @@
+[package]
+name = "projects_service"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "projects_service"
+path = "./app/main.rs"
+
+[lib]
+path = "./lib.rs"
+
+[dependencies]
+
+anyhow = "1.0.100"
+axum = { version = "0.8.4", features = ["http2", "macros", "tokio"] }
+axum-extra = { version = "0.10.2", features = ["cookie", "json-deserializer"] }
+axum-server = "0.7.2"
+axum-test = "18.1.0"
+dotenvy = "0.15.7"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+sqlx = { version = "0.8.6", features = [
+    "uuid",
+    "mysql",
+    "time",
+    "runtime-tokio",
+] }
+thiserror = "2.0.17"
+time = { version = "=0.3", features = ["serde"] }
+tokio = { version = "1.47.1", features = [
+    "rt",
+    "rt-multi-thread",
+    "macros",
+    "signal",
+] }
+tower-http = { version = "0.6.6", features = ["cors", "trace"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.20"
+trait-variant = "0.1.2"
+utoipa = { version = "5.4.0", features = ["chrono", "uuid"] }
+utoipa-rapidoc = { version = "6.0.0", features = ["axum"] }
+uuid = { version = "1.18.1", features = ["v4"] }
+validator = { version = "0.20.0", features = ["derive"] }

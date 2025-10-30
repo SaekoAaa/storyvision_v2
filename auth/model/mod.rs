@@ -1,4 +1,3 @@
-
 use sqlx::prelude::FromRow;
 use time::OffsetDateTime;
 

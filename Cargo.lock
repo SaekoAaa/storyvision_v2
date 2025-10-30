@@ -1659,6 +1659,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "projects_service"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "axum-extra",
+ "axum-server",
+ "axum-test",
+ "dotenvy",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "time",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "trait-variant",
+ "utoipa",
+ "utoipa-rapidoc",
+ "uuid",
+ "validator",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"

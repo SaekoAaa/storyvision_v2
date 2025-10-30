@@ -33,7 +33,7 @@ pub async fn shutdown_task(
 #[cfg(windows)]
 use {auth_service::features::common::AuthState, std::sync::Arc};
 #[cfg(unix)]
-use {std::sync::Arc, storymotion_server::routing::AuthState};
+use {auth_service::features::common::AuthState, std::sync::Arc};
 #[cfg(unix)]
 
 pub async fn shutdown_task(
@@ -62,7 +62,7 @@ pub async fn shutdown_task(
         _ = sigint.recv() => tracing::info!("Shutting down after SIGINT")
     }
 
-    state.db.close().await;
+    state.pool.close().await;
     // if let Some(metrics_provider) = metrics_provider {
     //     metrics_provider
     //         .shutdown()
