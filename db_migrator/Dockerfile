@@ -17,8 +17,8 @@ RUN --mount=type=bind,source=app,target=app \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-cargo build --release && \
-cp ./target/release/$APP_NAME /bin/server
+    cargo build --release && \
+    cp ./target/release/$APP_NAME /bin/server
 
 FROM alpine:3.18 AS final
 
@@ -39,6 +39,7 @@ USER appuser
 COPY --from=build /bin/server /bin/
 COPY migrations /migrations
 COPY fixtures /fixtures
+ENV MIGRATIONS_PATH=./migrations
 # Expose the port that the application listens on.
 EXPOSE 1000
 
