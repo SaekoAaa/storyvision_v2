@@ -13,7 +13,6 @@ RUN apk add --no-cache clang lld musl-dev git
 
 RUN --mount=type=bind,source=app,target=app \
     --mount=type=bind,source=lib.rs,target=lib.rs \
-    --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \

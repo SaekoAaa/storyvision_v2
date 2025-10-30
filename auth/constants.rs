@@ -1,0 +1,3 @@
+pub const REFRESH_EXPIRY_DAYS: i64 = 30;
+pub const REFRESH_TOKEN_ACCESS_PATH: &str = "/refresh";
+pub const ROUTER_VERSION_PATH: &str = "/v1";
