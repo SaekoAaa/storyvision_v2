@@ -1,16 +1,13 @@
-use axum::extract::Request;
-use axum::response::Response;
-use axum::{body::Bytes, routing::put};
-use projects_service::features::add_project_member;
-use projects_service::features::delete_project::handler::{delete_project, delete_project_handler};
+use axum::routing::get;
+use projects_service::features::add_project_member::handler::add_project_member_handler;
+use projects_service::features::delete_project::handler::delete_project_handler;
+use projects_service::features::get_project_metadata::handler::get_project_metadata_handler;
+use projects_service::features::list_projects::handler::list_projects_handler;
 use projects_service::features::remove_project_member::handler::remove_member_from_project_handler;
 use projects_service::features::update_project_metadata::handler::update_project_metadata_handler;
 use projects_service::features::{
     common::ProjectState, create_project::handler::create_project_handler,
 };
-use std::time::Duration;
-use tracing::Span;
-use tracing_subscriber::fmt::format::Full;
 use {
     axum::{Router, http::StatusCode, routing::post},
     projects_service::constants::ROUTER_VERSION_PATH,
@@ -18,7 +15,7 @@ use {
     tower_http::{cors::CorsLayer, trace::TraceLayer},
 };
 
-pub fn init_router(auth_state: Arc<ProjectState>) -> Router {
+pub fn init_router(state: Arc<ProjectState>) -> Router {
     Router::new()
         .route(
             "/healthcheck",
@@ -29,17 +26,19 @@ pub fn init_router(auth_state: Arc<ProjectState>) -> Router {
             Router::new().nest(
                 "/projects",
                 Router::new()
+                    .route("/", get(list_projects_handler))
                     .route("/create", post(create_project_handler))
                     .route(
                         "/{id}",
-                        put(update_project_metadata_handler).delete(delete_project_handler),
+                        get(get_project_metadata_handler)
+                            .put(update_project_metadata_handler)
+                            .delete(delete_project_handler),
                     )
                     .route(
                         "/{id}/members",
-                        post(add_project_member).delete(remove_member_from_project_handler),
+                        post(add_project_member_handler).delete(remove_member_from_project_handler),
                     )
-                    .route("/logout", post(handler_logout_user))
-                    .with_state(auth_state.clone()),
+                    .with_state(state.clone()),
             ),
         )
         .layer(

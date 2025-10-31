@@ -1,4 +1,3 @@
-use std::hash::Hash;
 use crate::constants::REFRESH_EXPIRY_DAYS;
 use crate::features::login_user::error::LoginError;
 use crate::model::UserId;
@@ -9,7 +8,6 @@ use std::net::SocketAddr;
 use sha2::{Digest, Sha256};
 use sqlx::MySqlPool;
 use time::{Duration, OffsetDateTime};
-use utoipa::openapi::security::Password;
 
 pub struct LoginData {
     pub id: u64,

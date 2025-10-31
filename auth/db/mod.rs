@@ -1,7 +1,4 @@
-use {
-    sqlx::{MySqlPool, migrate::Migrator},
-    std::path::Path,
-};
+use sqlx::MySqlPool;
 
 pub async fn init_database(url: &str) -> Result<MySqlPool, sqlx::Error> {
     tracing::debug!("Connecting to database with url: {}", url);

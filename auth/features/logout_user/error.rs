@@ -1,8 +1,6 @@
 use axum::http::StatusCode;
-use axum::Json;
 use axum::response::IntoResponse;
 use axum_extra::extract::JsonDeserializerRejection;
-use serde_json::json;
 use crate::features::common::api_error::{ApiError, Response};
 
 #[derive(thiserror::Error, Debug)]

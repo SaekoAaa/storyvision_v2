@@ -1,14 +1,12 @@
+use crate::features::common::api_error::{ApiError, Response};
 use axum::http::StatusCode;
-use axum::Json;
 use axum::response::IntoResponse;
 use axum_extra::extract::JsonDeserializerRejection;
-use serde_json::json;
-use validator::{ValidationError, ValidationErrors};
-use crate::features::common::api_error::{ApiError, Response};
+use validator::ValidationErrors;
 
 #[derive(thiserror::Error, Debug)]
 pub enum LoginError {
-    #[error("db error")]
+    #[error("db error: {0}")]
     Db(#[from] sqlx::Error),
     #[error("user not found")]
     NotFound {
@@ -57,10 +55,10 @@ impl ApiError for LoginErrorResponse {
                     "Failed to validate or decode JWT token.".to_string(),
                 ),
                 LoginError::NotFound { user_response, .. } => (
-                        StatusCode::NOT_FOUND,
-                        "NOT_FOUND_ERROR".to_string(),
-                        user_response.to_string(),
-                    )
+                    StatusCode::NOT_FOUND,
+                    "NOT_FOUND_ERROR".to_string(),
+                    user_response.to_string(),
+                ),
             },
 
             Self::JsonDeserializationError(_) => (
@@ -72,7 +70,7 @@ impl ApiError for LoginErrorResponse {
                 StatusCode::BAD_REQUEST,
                 "VALIDATION_ERROR".to_string(),
                 e.to_string(),
-                )
+            ),
         };
         Response {
             status,

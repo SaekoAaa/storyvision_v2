@@ -22,7 +22,7 @@ pub enum GetProjectErrorResponse {
     #[error("Not found: {message}")]
     NotFound {
         message: Cow<'static, str>,
-        response: Cow<'static, str>,
+        response: String,
     },
 }
 

@@ -1,14 +1,13 @@
-use axum::http::StatusCode;
+use crate::features::common::api_error::{ApiError, Response};
 use axum::Json;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum_extra::extract::JsonDeserializerRejection;
 use serde_json::json;
-use validator::{ValidationError, ValidationErrors};
-use crate::features::common::api_error::{ApiError, Response};
 
 #[derive(thiserror::Error, Debug)]
 pub enum RefreshTokenError {
-    #[error("db error")]
+    #[error("db error: {0}")]
     Db(#[from] sqlx::Error),
 
     #[error("JWT error: {0}")]
@@ -60,7 +59,7 @@ impl ApiError for RefreshTokenErrorResponse {
                     StatusCode::UNAUTHORIZED,
                     "INVALID_REFRESH_TOKEN".to_string(),
                     "The provided refresh token is invalid or expired.".to_string(),
-                    )
+                ),
             },
 
             Self::JsonDeserializationError(_) => (
@@ -79,7 +78,6 @@ impl ApiError for RefreshTokenErrorResponse {
                 "REFRESH_TOKEN_INVALID".to_string(),
                 self.to_string(),
             ),
-
         };
         Response {
             status,

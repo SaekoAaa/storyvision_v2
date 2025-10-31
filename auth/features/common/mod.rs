@@ -1,5 +1,5 @@
 use {
-    crate::features::common::api_error::ApiError, argon2::password_hash::SaltString, std::sync::Arc,
+    argon2::password_hash::SaltString, std::sync::Arc,
 };
 
 pub mod api_error;

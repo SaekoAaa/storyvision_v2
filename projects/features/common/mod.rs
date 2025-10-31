@@ -3,7 +3,7 @@ use std::sync::Arc;
 pub mod api_error;
 pub mod api_response;
 pub struct ProjectState {
-    pub pool: Arc<sqlx::MySqlPool>,
+    pub pool: sqlx::MySqlPool,
 }
 #[derive(Clone)]
 pub struct UserData {

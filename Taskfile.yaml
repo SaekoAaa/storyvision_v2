@@ -6,3 +6,9 @@ tasks:
     cmds:
       - docker build -f db_migrator/Dockerfile -t db_migrator .
     desc: Build the Docker image for the database migrator service.
+  run_auth:
+    aliases:
+      - au
+    cmds:
+      - cargo r --bin auth_service
+    desc: Run the auth service.

@@ -1,10 +1,6 @@
 use std::borrow::Cow;
-use axum::http::StatusCode;
-use axum::Json;
-use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-use crate::features::common::api_response::ApiResponse;
 
 #[derive(Deserialize, validator::Validate, ToSchema)]
 pub struct LoginUserRequest<'a> {

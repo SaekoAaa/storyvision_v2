@@ -1,12 +1,11 @@
 use {
     axum::{
-        Json,
-        extract::{ConnectInfo, State},
+        extract::State,
         http::StatusCode,
         response::IntoResponse,
     },
-    axum_extra::extract::{CookieJar, JsonDeserializer, cookie::Cookie},
-    std::{net::SocketAddr, sync::Arc},
+    axum_extra::extract::{CookieJar, cookie::Cookie},
+    std::sync::Arc,
     time::Duration,
     utoipa::OpenApi,
     uuid::Uuid,

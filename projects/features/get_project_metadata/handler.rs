@@ -14,7 +14,7 @@ use crate::features::{
     },
 };
 
-pub async fn list_projects_handler(
+pub async fn get_project_metadata_handler(
     State(state): State<Arc<ProjectState>>,
     Path(project_id): Path<u64>,
     Extension(user): Extension<UserData>,

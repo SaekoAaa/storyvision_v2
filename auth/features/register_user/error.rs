@@ -1,22 +1,19 @@
-use validator::{ValidationError, ValidationErrors};
 use {
     crate::features::common::api_error::{ApiError, Response},
-    axum::{http::StatusCode, response::IntoResponse, Json},
+    axum::{http::StatusCode, response::IntoResponse},
     axum_extra::extract::JsonDeserializerRejection,
-    serde_json::json,
 };
 
 #[derive(Debug, thiserror::Error)]
 pub enum RegisterError {
     #[error("email already registered")]
     EmailAlreadyExists,
-    #[error("db error")]
+    #[error("db error: {0}")]
     Db(#[from] sqlx::Error),
     #[error("password hashing error: {0}")]
     PasswordHashingError(#[from] argon2::password_hash::Error),
     #[error("JWT error: {0}")]
     JsonWebTokenError(#[from] jsonwebtoken::errors::Error),
-
 }
 #[derive(Debug, thiserror::Error)]
 pub enum RegisterErrorResponse {
@@ -65,7 +62,6 @@ impl ApiError for RegisterErrorResponse {
                     "JWT_ERROR".to_string(),
                     "Failed to validate or decode JWT token.".to_string(),
                 ),
-
             },
 
             Self::JsonDeserializationError(_) => (
@@ -77,7 +73,7 @@ impl ApiError for RegisterErrorResponse {
                 StatusCode::BAD_REQUEST,
                 "VALIDATION_ERROR".to_string(),
                 e.to_string(),
-            )
+            ),
         };
         Response {
             status,
