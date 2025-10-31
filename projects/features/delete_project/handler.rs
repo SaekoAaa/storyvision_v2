@@ -12,7 +12,7 @@ use crate::features::{
     delete_project::{error::DeleteProjectErrorResponse, usecase::delete_project_usecase},
 };
 
-pub async fn delete_project(
+pub async fn delete_project_handler(
     State(state): State<Arc<ProjectState>>,
     Path(project_id): Path<u64>,
     Extension(user): Extension<UserData>,
