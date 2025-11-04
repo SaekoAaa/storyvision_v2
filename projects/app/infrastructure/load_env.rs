@@ -9,6 +9,7 @@ pub struct Environment {
     pub db_address: String,
     pub app_port: u16,
     pub app_address: String,
+    pub test_user_data: bool,
 }
 impl Environment {
     pub fn load_env() -> anyhow::Result<Self> {
@@ -21,6 +22,10 @@ impl Environment {
             app_address: var("APP_ADDRESS").context("APP_ADDRESS")?,
             app_port: var("APP_PORT")
                 .unwrap_or(String::from("4000"))
+                .parse()
+                .unwrap(),
+            test_user_data: var("TEST_USER_DATA")
+                .unwrap_or(String::from("false"))
                 .parse()
                 .unwrap(),
         })

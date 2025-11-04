@@ -1,5 +1,7 @@
+use crate::infrastructure::test_user_data::insert_test_user_data;
 use projects_service::features::common::ProjectState;
 use sqlx::MySqlPool;
+
 use {
     crate::infrastructure::{load_env::Environment, router::init_router, shutdown::shutdown_task},
     axum_server::Handle,
@@ -36,7 +38,10 @@ async fn main() {
         .expect("Failed to connect to database");
     tracing::debug!("Connected to database");
     let auth_state = Arc::new(ProjectState { pool: pool.clone() });
-    let router = init_router(auth_state.clone());
+    let mut router = init_router(auth_state.clone());
+    if env.test_user_data {
+        router = insert_test_user_data(router);
+    }
     let handle = Handle::new();
     let ipv4 = Ipv4Addr::from_str(&env.app_address)
         .expect("Should parse server address in format \"0.0.0.0\"");

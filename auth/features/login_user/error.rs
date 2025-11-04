@@ -2,6 +2,7 @@ use crate::features::common::api_error::{ApiError, Response};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum_extra::extract::JsonDeserializerRejection;
+use utoipa::IntoResponses;
 use validator::ValidationErrors;
 
 #[derive(thiserror::Error, Debug)]
