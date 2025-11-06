@@ -4,27 +4,28 @@ tasks:
   docker_build:
     aliases:
       - db
+    vars:
+      COMMIT_HASH:
+        sh: "git rev-parse --short HEAD"
+      IMAGE_NAME: migrator_service
+      DATETIME:
+        sh: powershell -Command "Get-Date -Format o"
+      VERSION_FILE_NAME: DOCKER_VERSION.yaml
     cmds:
-      - docker build -t migrator_service:latest .
-    desc: Build the Docker image for the migrator service
-  apply_migration:
-    aliases:
-      - am
-    preconditions:
-      - test -d ./migrations
-    env:
-      MIGRATIONS_PATH: "./migrations"
-    cmds:
-      - cargo run --bin migrator_service
-    desc: Apply database migrations
-  revert_migration:
-    aliases:
-      - rm
-    preconditions:
-      - test -d ./migrations
-    env:
-      MIGRATIONS_PATH: "./migrations"
-      IS_REVERT: "true"
-    cmds:
-      - cargo run --bin migrator_service
-    desc: Revert database migrations
+      - |
+        if [ -z "{{.CLI_ARGS}}" ]; then
+          echo "Version not found, specify one: -- 1.2.3"
+          exit 1
+        fi
+      - docker build -t {{.IMAGE_NAME}}:{{.CLI_ARGS}}-{{.COMMIT_HASH}} .
+      - |
+        if [ ! -f {{.VERSION_FILE_NAME}} ]; then
+          echo "builds:" > {{.VERSION_FILE_NAME}}
+        fi
+      - echo "- {{.CLI_ARGS}}:" >> {{.VERSION_FILE_NAME}}
+      - >
+        echo "  name: {{.IMAGE_NAME}}:{{.CLI_ARGS}}-{{.COMMIT_HASH}}" >> {{.VERSION_FILE_NAME}}
+      - >
+        echo "  datetime: {{.DATETIME}}" >> {{.VERSION_FILE_NAME}}
+      - echo "Image {{.IMAGE_NAME}}:{{.CLI_ARGS}}-{{.COMMIT_HASH}} built successfully"
+    desc: Build the Docker image with commit and version. Use with -- 1.X.X args

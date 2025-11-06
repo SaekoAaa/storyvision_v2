@@ -1,14 +1,13 @@
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use validator::{Validate, ValidationErrors};
 use {
     crate::{
         constants::REFRESH_TOKEN_ACCESS_PATH,
         features::{
             common::{
-                api_response::HandlerResult
-                ,
-                openapi::{BaseErrorResponseSchema, InternalErrorResponse},
                 AuthState,
+                api_response::HandlerResult,
+                openapi::{BaseErrorResponseSchema, InternalErrorResponse},
             },
             register_user::{
                 dto::{RegisterUserRequest, RegisterUserResponse},
@@ -18,12 +17,12 @@ use {
         },
     },
     axum::{
+        Json,
         extract::{ConnectInfo, State},
         http::StatusCode,
         response::IntoResponse,
-        Json,
     },
-    axum_extra::extract::{cookie::Cookie, CookieJar, JsonDeserializer},
+    axum_extra::extract::{CookieJar, JsonDeserializer, cookie::Cookie},
     std::{net::SocketAddr, sync::Arc},
     time::Duration,
     utoipa::OpenApi,
@@ -71,7 +70,9 @@ pub async fn handler_register_user(
     serial_data: JsonDeserializer<RegisterUserRequest<'_>>,
 ) -> HandlerResult<impl IntoResponse, RegisterErrorResponse> {
     let register_user_request = serial_data.deserialize()?;
-    register_user_request.validate().map_err(|e| RegisterErrorResponse::ValidationError(validation_errors_to_json(e)))?;
+    register_user_request
+        .validate()
+        .map_err(|e| RegisterErrorResponse::ValidationError(validation_errors_to_json(e)))?;
     let RegisterUserRequest { email, password } = register_user_request;
     let register_data = register_user(
         &app_state.pool,

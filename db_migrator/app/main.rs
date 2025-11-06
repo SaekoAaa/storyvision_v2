@@ -1,5 +1,5 @@
 use {
-    crate::infrastructure::load_env::Environment,
+    crate::infrastructure::load_env::Enviroment,
     mysql::{Opts, Pool, TxOpts, prelude::Queryable},
     std::{fs, path::Path},
     tracing::level_filters::LevelFilter,
@@ -17,12 +17,15 @@ fn main() {
     if let Err(e) = dotenvy::dotenv() {
         tracing::debug!("Dotenv import 2 failed: {}. Fine for docker", e);
     };
-    let env = Environment::load_env().expect("Loading enviroment variables error");
+    let env = Enviroment::load_env().expect("Loading enviroment variables error");
     let mysql_connection_string = format!(
         "mysql://{}:{}@{}:{}/{}",
-        env.mysql_user, env.mysql_password, env.db_address, env.mysql_port, env.mysql_database
+        env.mysql_user,
+        env.mysql_password,
+        env.database.address,
+        env.database.port,
+        env.database.name
     );
-    tracing::error!("");
     let opts = Opts::try_from(mysql_connection_string.as_str()).unwrap();
     let pool = Pool::new(opts).expect("Connecting to database");
     tracing::info!("Connected to database");

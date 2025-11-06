@@ -12,6 +12,7 @@ WORKDIR /app
 RUN apk add --no-cache clang lld musl-dev git
 
 RUN --mount=type=bind,source=app,target=app \
+    --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=lib.rs,target=lib.rs \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
@@ -37,8 +38,9 @@ USER appuser
 # Copy the executable from the "build" stage.
 COPY --from=build /bin/server /bin/
 COPY migrations /migrations
-COPY fixtures /fixtures
-ENV MIGRATIONS_PATH=./migrations
+COPY config/docker_config.yaml /app/config.yaml
+# COPY fixtures /fixtures
+# ENV MIGRATIONS_PATH=./migrations
 # Expose the port that the application listens on.
 EXPOSE 1000
 

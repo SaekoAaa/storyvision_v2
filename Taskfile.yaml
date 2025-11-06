@@ -12,3 +12,26 @@ tasks:
     cmds:
       - cargo r --bin auth_service
     desc: Run the auth service.
+  apply_migration:
+    dir: ./db_migrator
+    aliases:
+      - am
+    preconditions:
+      - test -d ./migrations
+    env:
+      MIGRATIONS_PATH: "./migrations"
+    cmds:
+      - cargo run --bin migrator_service
+    desc: Apply database migrations
+  revert_migration:
+    dir: ./db_migrator
+    aliases:
+      - rm
+    preconditions:
+      - test -d ./migrations
+    env:
+      MIGRATIONS_PATH: "./migrations"
+      IS_REVERT: "true"
+    cmds:
+      - cargo run --bin migrator_service
+    desc: Revert database migrations

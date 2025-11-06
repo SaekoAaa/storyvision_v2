@@ -40,6 +40,7 @@ async fn main() {
     let auth_state = Arc::new(ProjectState { pool: pool.clone() });
     let mut router = init_router(auth_state.clone());
     if env.test_user_data {
+        tracing::warn!("Using test user data");
         router = insert_test_user_data(router);
     }
     let handle = Handle::new();

@@ -1,0 +1,6 @@
+# Container config
+database:
+  name: "app_db"
+  port: 3306
+  address: "127.0.0.1"
+migrations_path: "./migrations"
