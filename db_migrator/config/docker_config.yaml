@@ -1,6 +1,0 @@
-# Container config
-database:
-  name: "storyvision"
-  port: 3306
-  address: "mysql"
-migrations_path: "./migrations"

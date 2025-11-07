@@ -1,64 +1,39 @@
 use {
-    crate::infrastructure::load_env::Enviroment,
-    mysql::{Opts, Pool, TxOpts, prelude::Queryable},
-    std::{fs, path::Path},
-    tracing::level_filters::LevelFilter,
+    crate::{
+        infrastructure::app,
+        observability::{metrics::init_metrics, otel::OtelGuard, tracing::init_traces},
+    },
+    opentelemetry::trace::TracerProvider as _,
+    tracing::{info_span, level_filters::LevelFilter},
+    tracing_opentelemetry::OpenTelemetryLayer,
+    tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt},
 };
 mod infrastructure;
-
+mod observability;
 fn main() {
-    tracing_subscriber::fmt::fmt()
-        .with_max_level(LevelFilter::DEBUG)
+    let collector_url = "http://127.0.0.1:4329/v1";
+    let traces = init_traces(&format!("{}/traces", collector_url));
+    let tracer = traces.tracer("Migrator tracing");
+    // let telemetry = tracing_opentelemetry::layer()
+    // .with_level(true)
+    // .with_tracer(tracer);
+    let level = tracing_subscriber::fmt::layer().with_filter(LevelFilter::INFO);
+    tracing_subscriber::registry()
+        .with(level)
+        .with(OpenTelemetryLayer::new(tracer))
         .init();
-    tracing::debug!(
-        "Current path: {}",
-        std::env::current_dir().unwrap().display()
-    );
+    let metrics = init_metrics(&format!("{}/metrics", collector_url)).unwrap();
+    let _otel_guard = OtelGuard {
+        tracer_provider: traces,
+        meter_provider: metrics,
+    };
     if let Err(e) = dotenvy::dotenv() {
         tracing::debug!("Dotenv import 2 failed: {}. Fine for docker", e);
     };
-    let env = Enviroment::load_env().expect("Loading enviroment variables error");
-    let mysql_connection_string = format!(
-        "mysql://{}:{}@{}:{}/{}",
-        env.mysql_user,
-        env.mysql_password,
-        env.database.address,
-        env.database.port,
-        env.database.name
-    );
-    let opts = Opts::try_from(mysql_connection_string.as_str()).unwrap();
-    let pool = Pool::new(opts).expect("Connecting to database");
-    tracing::info!("Connected to database");
-    let path = match env.is_revert {
-        true => {
-            tracing::info!("Reverting migrations");
-            Path::new(&env.migrations_path).join("mysql_down.sql")
-        }
-        false => {
-            tracing::info!("Applying migrations");
-            Path::new(&env.migrations_path).join("mysql_up.sql")
-        }
-    };
-    tracing::info!("Initialising migrations at: {}", env.migrations_path);
-    let sql = fs::read_to_string(&path)
-        .inspect_err(|_| {
-            tracing::error!("Failed to read migration file at path: {}", path.display())
-        })
+    let main_span = info_span!("app");
+    let _g = main_span.enter();
+    app::run()
+        .inspect_err(|e| tracing::error!("{}", e))
         .unwrap();
-    let mut tx = pool
-        .start_transaction(TxOpts::default())
-        .expect("Starting transaction");
-    for stmt in sql.split(';') {
-        let stmt = stmt.trim();
-        if !stmt.is_empty() {
-            if let Err(e) = tx.query_drop(stmt) {
-                tracing::error!("Failed to execute migration statement: {}", e);
-                tx.rollback().expect("Failed to rollback transaction");
-                return;
-            }
-        }
-    }
-
-    tx.commit().expect("Failed to commit transaction");
-    tracing::info!("Migrations complete");
+    drop(_g);
 }

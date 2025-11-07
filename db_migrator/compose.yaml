@@ -9,13 +9,14 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      CONFIG_PATH: "/app/config.yaml"
-      DB_USER_FILE: /run/secrets/db_user
-      DB_PASSWORD_FILE: /run/secrets/db_password
-    volumes:
-      - ./config/docker_config.yaml:/app/config.yaml
-      - ./.env:/app/.env
-
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_PORT: 3306
+      MYSQL_ADDRESS: "127.0.0.1"
+      MYSQL_DATABASE: "app_db"
+    secrets:
+      - db_user
+      - db_password
   mysql:
     container_name: mysql
     image: mysql:latest
@@ -27,7 +28,7 @@ services:
     expose:
       - 3306
     ports:
-      - 3306
+      - "3306:3306"
     healthcheck:
       test:
         [
@@ -38,8 +39,31 @@ services:
       timeout: 5s
       retries: 10
       start_period: 3s
+  otel-collector:
+    container_name: otel
+    image: otel/opentelemetry-collector-contrib
+    command: --config=/etc/otelcol/config.yaml
+    ports:
+      - "4329:4318" # HTTP
+    #      - "9464:9464"  # Prometheus scrape endpoint
+    volumes:
+      - ./config/otel_collector.yaml:/etc/otelcol/config.yaml:ro
+  jaeger:
+    image: jaegertracing/jaeger:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686" # Web UI http://localhost:16686
+      - "14268:14268"
+    expose:
+      - "14268"
+      - "4317"
+      - "4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      LOG_LEVEL: debug
 
-    # volumes:
-    #   - db_data:/var/lib/mysql
-# volumes:
-#   db_data:
+secrets:
+  db_user:
+    file: ./secrets/mysql_user.txt
+  db_password:
+    file: ./secrets/mysql_password.txt

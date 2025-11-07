@@ -38,7 +38,7 @@ USER appuser
 # Copy the executable from the "build" stage.
 COPY --from=build /bin/server /bin/
 COPY migrations /migrations
-COPY config/docker_config.yaml /app/config.yaml
+# COPY config/docker_config.yaml /app/config.yaml
 # COPY fixtures /fixtures
 # ENV MIGRATIONS_PATH=./migrations
 # Expose the port that the application listens on.
