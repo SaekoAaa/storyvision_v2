@@ -10,16 +10,20 @@ pub fn get_resource() -> Resource {
 }
 
 pub struct OtelGuard {
-    pub tracer_provider: SdkTracerProvider,
-    pub meter_provider: SdkMeterProvider,
+    pub tracer_provider: Option<SdkTracerProvider>,
+    pub meter_provider: Option<SdkMeterProvider>,
 }
 impl Drop for OtelGuard {
     fn drop(&mut self) {
-        if let Err(err) = self.tracer_provider.shutdown() {
-            eprintln!("{err:?}");
+        if let Some(tracer) = &self.tracer_provider {
+            if let Err(err) = tracer.shutdown() {
+                eprintln!("{err:?}");
+            }
         }
-        if let Err(err) = self.meter_provider.shutdown() {
-            eprintln!("{err:?}");
+        if let Some(metrics) = &self.meter_provider {
+            if let Err(err) = metrics.shutdown() {
+                eprintln!("{err:?}");
+            }
         }
     }
 }

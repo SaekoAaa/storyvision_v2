@@ -1,3 +1,5 @@
+use sqlx::prelude::FromRow;
+
 #[derive(sqlx::FromRow, Debug)]
 pub struct Project {
     pub id: u64,
@@ -7,8 +9,13 @@ pub struct Project {
     pub description: String,
 }
 pub type ProjectId = u64;
-#[derive(sqlx::FromRow, Debug)]
+
+#[derive(Debug, sqlx::FromRow)]
 pub struct ProjectMember {
-    pub id: u64,
-    pub email: String,
+    pub member_id: u64,
+    pub user_id: u64,
+    pub user_email: String,
+    pub project_id: u64,
+    pub project_name: String,
+    pub is_owner: bool,
 }

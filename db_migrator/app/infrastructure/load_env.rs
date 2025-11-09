@@ -1,5 +1,5 @@
-
 use dotenvy::var;
+use strum_macros::{AsRefStr, IntoStaticStr};
 use tracing::info;
 
 pub struct Enviroment {
@@ -9,9 +9,27 @@ pub struct Enviroment {
     pub mysql_user: String,
     pub mysql_password: String,
     pub migrations_path: String,
-    pub is_revert: bool,
+    pub migration_type: MigrationType,
+}
+#[derive(Debug, Clone, Copy, IntoStaticStr)]
+pub enum MigrationType {
+    ApplyMigration,
+    RevertMigration,
+    ApplyWithData,
+    ApplyAndClearData,
 }
 
+impl From<i32> for MigrationType {
+    fn from(value: i32) -> Self {
+        match value {
+            1 => MigrationType::ApplyMigration,
+            2 => MigrationType::RevertMigration,
+            3 => MigrationType::ApplyWithData,
+            4 => MigrationType::ApplyAndClearData,
+            _ => MigrationType::ApplyMigration, // default
+        }
+    }
+}
 fn read_env(key: &str) -> anyhow::Result<String> {
     var(key).map_err(|e| anyhow::anyhow!("Missing env var {}: {}", key, e))
 }
@@ -27,8 +45,10 @@ impl Enviroment {
         let database_port = read_env("MYSQL_PORT")?;
         let database_address = read_env("MYSQL_ADDRESS")?;
         let migrations_path = read_env("MIGRATIONS_PATH")?;
-        let is_revert = var("IS_REVERT").map_or(false, |v| v == "true");
 
+        let migration_type: MigrationType = read_env("MIGRATION_TYPE")
+            .map_or(1, |num| num.parse::<i32>().unwrap_or(1))
+            .into();
         let mysql_user = match var("MYSQL_USER") {
             Ok(user) => user,
             Err(_) => {
@@ -52,9 +72,9 @@ impl Enviroment {
             mysql_user,
             mysql_password,
             migrations_path,
-            is_revert,
             database_port,
             database_address,
+            migration_type,
         };
 
         Ok(env)

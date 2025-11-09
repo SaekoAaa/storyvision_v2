@@ -5,7 +5,7 @@ use validator::ValidationErrors;
 use crate::features::common::api_error::{ApiError, Response};
 
 #[derive(thiserror::Error, Debug)]
-pub enum AddProjectMemberError {
+pub enum ListProjectMembersError {
     #[error(transparent)]
     Db(#[from] sqlx::Error),
     #[error("user not found")]
@@ -13,49 +13,49 @@ pub enum AddProjectMemberError {
         user_response: String,
         details: String,
     },
-    #[error("not a project owner")]
-    NotAProjectOwner,
+    #[error("User not in project")]
+    NotInProject,
     #[error("permission denied: {0}")]
     PermissionDenied(String),
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum AddProjectMemberErrorResponse {
+pub enum ListProjectMembersErrorResponse {
     #[error("Failed to create project: {0}")]
-    AddProjectMemberError(#[from] AddProjectMemberError),
+    ListProjectMembersError(#[from] ListProjectMembersError),
     #[error("Failed to deserialize JSON: {0}")]
     JsonDeserializationError(#[from] JsonDeserializerRejection),
     #[error("Validation error: {0}")]
     ValidationError(#[from] ValidationErrors),
 }
-impl IntoResponse for AddProjectMemberErrorResponse {
+impl IntoResponse for ListProjectMembersErrorResponse {
     fn into_response(self) -> axum::response::Response {
         ApiError::into_response(self)
     }
 }
-impl ApiError for AddProjectMemberErrorResponse {
+impl ApiError for ListProjectMembersErrorResponse {
     fn error_response(&self) -> Response {
         let (status, error, message) = match self {
-            Self::AddProjectMemberError(err) => match err {
-                AddProjectMemberError::Db(_) => (
+            Self::ListProjectMembersError(err) => match err {
+                ListProjectMembersError::Db(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "DATABASE_ERROR".to_string(),
                     "An internal database error occurred. Please try again later.".to_string(),
                 ),
-                AddProjectMemberError::NotFound { user_response, .. } => (
+                ListProjectMembersError::NotFound { user_response, .. } => (
                     StatusCode::NOT_FOUND,
                     "NOT_FOUND_ERROR".to_string(),
                     user_response.to_string(),
                 ),
-                AddProjectMemberError::PermissionDenied(response) => (
+                ListProjectMembersError::PermissionDenied(response) => (
                     StatusCode::FORBIDDEN,
                     "PERMISSION_DENIED".to_string(),
                     response.to_string(),
                 ),
-                AddProjectMemberError::NotAProjectOwner => (
+                ListProjectMembersError::NotInProject => (
                     StatusCode::FORBIDDEN,
-                    "NOT_A_PROJECT_OWNER".to_string(),
-                    "You are not the owner of this project.".to_string(),
+                    "NOT_IN_PROJECT".to_string(),
+                    "You are not a member of this project.".to_string(),
                 ),
             },
 

@@ -22,7 +22,7 @@ pub async fn remove_member_from_project_usecase(
     if project_owner_id != Some(owner_id) {
         return Err(RemoveProjectMemberError::NotAProjectOwner);
     }
-    sqlx::query("DELETE FROM project_members WHERE member_id = ? AND project_id = ?")
+    sqlx::query("DELETE FROM project_members WHERE user_id = ? AND project_id = ?")
         .bind(member_id)
         .bind(project_id)
         .execute(pool)

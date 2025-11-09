@@ -2,6 +2,8 @@ use axum::routing::get;
 use projects_service::features::add_project_member::handler::add_project_member_handler;
 use projects_service::features::delete_project::handler::delete_project_handler;
 use projects_service::features::get_project_metadata::handler::get_project_metadata_handler;
+use projects_service::features::list_project_members;
+use projects_service::features::list_project_members::handler::list_project_members_handler;
 use projects_service::features::list_projects::handler::list_projects_handler;
 use projects_service::features::remove_project_member::handler::remove_member_from_project_handler;
 use projects_service::features::update_project_metadata::handler::update_project_metadata_handler;
@@ -26,8 +28,7 @@ pub fn init_router(state: Arc<ProjectState>) -> Router {
             Router::new().nest(
                 "/projects",
                 Router::new()
-                    .route("/", get(list_projects_handler))
-                    .route("/create", post(create_project_handler))
+                    .route("/", get(list_projects_handler).post(create_project_handler))
                     .route(
                         "/{id}",
                         get(get_project_metadata_handler)
@@ -36,7 +37,9 @@ pub fn init_router(state: Arc<ProjectState>) -> Router {
                     )
                     .route(
                         "/{id}/members",
-                        post(add_project_member_handler).delete(remove_member_from_project_handler),
+                        get(list_project_members_handler)
+                            .post(add_project_member_handler)
+                            .delete(remove_member_from_project_handler),
                     )
                     .with_state(state.clone()),
             ),

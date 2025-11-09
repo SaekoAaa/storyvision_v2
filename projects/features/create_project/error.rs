@@ -6,7 +6,7 @@ use crate::features::common::api_error::{ApiError, Response};
 
 #[derive(thiserror::Error, Debug)]
 pub enum CreateProjectError {
-    #[error("db error")]
+    #[error(transparent)]
     Db(#[from] sqlx::Error),
     #[error("user not found")]
     NotFound {

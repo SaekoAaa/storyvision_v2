@@ -1,5 +1,4 @@
 use crate::features::delete_project::error::DeleteProjectError;
-
 pub async fn delete_project_usecase(
     project_id: u64,
     owner_id: u64,

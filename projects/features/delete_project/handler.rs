@@ -17,6 +17,6 @@ pub async fn delete_project_handler(
     Path(project_id): Path<u64>,
     Extension(user): Extension<UserData>,
 ) -> HandlerResult<impl IntoResponse, DeleteProjectErrorResponse> {
-    delete_project_usecase(user.id, project_id, &state.pool).await?;
+    delete_project_usecase(project_id, user.id, &state.pool).await?;
     Ok(StatusCode::OK)
 }

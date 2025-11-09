@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrator
+spec:
+  template:
+    spec:
+      containers:
+        - name: db-migrator
+          image: migrator_service:1.1.0-dec4783
+          imagePullPolicy: Never
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_DATABASE
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_ADDRESS
+              value: "mysql-service"
+            - name: MIGRATIONS_PATH
+              value: "./migrations"
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+      restartPolicy: OnFailure
+  backoffLimit: 4

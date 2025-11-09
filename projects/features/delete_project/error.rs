@@ -6,7 +6,7 @@ use crate::features::common::api_error::{ApiError, Response};
 
 #[derive(Debug, thiserror::Error)]
 pub enum DeleteProjectError {
-    #[error("Database error: {0}")]
+    #[error(transparent)]
     DatabaseError(#[from] sqlx::Error),
     #[error("Entity not found: {details}")]
     NotFound {

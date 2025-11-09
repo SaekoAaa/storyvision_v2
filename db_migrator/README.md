@@ -5,3 +5,9 @@
 Записывает сборку в DOCKER_VERSION.yaml файл
 ## compose.yaml исключительно для тестирования работоспособности
 ## Нужна дополнительная работа над конфигом
+
+## Типы миграций (MIGRATION_TYPE env):
+1 - ApplyMigration
+2 - RevertMigration
+3 - ApplyWithData
+4 - ApplyAndClearData

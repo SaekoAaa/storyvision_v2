@@ -30,6 +30,14 @@ pub async fn create_project_usecase<'a>(
     .await?;
 
     let id = res.last_insert_id();
+    sqlx::query(
+        "INSERT INTO project_members (project_id, user_id)
+                    VALUES (?, ?)",
+    )
+    .bind(id)
+    .bind(owner_id)
+    .execute(pool)
+    .await?;
     Ok(ProjectData {
         id,
         name: project_name,

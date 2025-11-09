@@ -9,10 +9,12 @@ pub fn hash_password(
 ) -> Result<String, argon2::password_hash::Error> {
     let hashed_password = Argon2::default().hash_password(password.as_bytes(), salt)?;
     let password_hash_string = hashed_password.serialize().to_string();
+    tracing::debug!(password_hash_string);
     Ok(password_hash_string)
 }
 pub fn verify_password(password: &str, password_hash: &str) -> argon2::password_hash::Result<()> {
     let parsed_hash = PasswordHash::new(password_hash)?;
+    tracing::debug!(password_hash, password);
     argon2::Argon2::default().verify_password(password.as_bytes(), &parsed_hash)
 }
 

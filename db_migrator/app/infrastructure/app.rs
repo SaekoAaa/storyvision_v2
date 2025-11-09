@@ -6,7 +6,9 @@ use tracing::debug_span;
 
 use crate::{
     infrastructure::{
-        apply_tx::apply_transaction, database::connect_to_database, load_env::Enviroment,
+        apply_tx::{apply_separately, apply_transaction},
+        database::connect_to_database,
+        load_env::{Enviroment, MigrationType},
     },
     observability::metrics::{MIGRATIONS_COUNTER, MIGRATIONS_DURATION},
 };
@@ -23,29 +25,101 @@ pub fn run() -> anyhow::Result<()> {
     tracing::info!("connecting to db with: {}", mysql_connection_string);
     let pool = connect_to_database(&mysql_connection_string)
         .inspect_err(|error| tracing::error!(%error, database = env.database, database.user = env.mysql_user, database.address = env.database_address, database.port = env.database_port, "Connecting to database error"))?;
-    let path = match env.is_revert {
-        true => {
+
+    let timer = std::time::Instant::now();
+    match env.migration_type {
+        MigrationType::RevertMigration => {
             tracing::info!("Reverting migrations");
-            Path::new(&env.migrations_path).join("mysql_down.sql")
+            let path = Path::new(&env.migrations_path).join("mysql_down.sql");
+            tracing::info!("Initialising migrations at: {}", env.migrations_path);
+            let span = debug_span!("Reverting migrations", path = &path.to_str());
+            span.in_scope(|| {
+                let sql = read_to_string(&path)
+                    .inspect_err(|_| {
+                        tracing::error!("Failed to read migration file at path: {}", path.display())
+                    })
+                    .unwrap();
+                apply_transaction(&pool, &sql).unwrap();
+            });
         }
-        false => {
+        MigrationType::ApplyMigration => {
             tracing::info!("Applying migrations");
-            Path::new(&env.migrations_path).join("mysql_up.sql")
+            let path = Path::new(&env.migrations_path).join("mysql_up.sql");
+            tracing::info!("Initialising migrations at: {}", env.migrations_path);
+            let span = debug_span!("Applying migrations", path = &path.to_str());
+            span.in_scope(|| {
+                let sql = read_to_string(&path)
+                    .inspect_err(|_| {
+                        tracing::error!("Failed to read migration file at path: {}", path.display())
+                    })
+                    .unwrap();
+                apply_transaction(&pool, &sql).unwrap();
+            });
+        }
+        MigrationType::ApplyWithData => {
+            tracing::info!("Applying migrations and filling data");
+            let path = Path::new(&env.migrations_path).join("mysql_up.sql");
+            tracing::info!("Initialising migrations at: {}", env.migrations_path);
+            let span = debug_span!("applying_migration", path = &path.to_str());
+            span.in_scope(|| {
+                let sql = read_to_string(&path)
+                    .inspect_err(|_| {
+                        tracing::error!("Failed to read migration file at path: {}", path.display())
+                    })
+                    .unwrap();
+                apply_transaction(&pool, &sql).unwrap();
+            });
+            tracing::info!("Filling data to database");
+
+            let span = debug_span!("Filling sql data", path = &path.to_str());
+            let fill_data_sql = Path::new(&env.migrations_path).join("mysql_fill_data.sql");
+            span.in_scope(|| {
+                let fill_data_sql = read_to_string(&fill_data_sql)
+                    .inspect_err(|_| {
+                        tracing::error!(
+                            "Failed to read fill data file at path: {}",
+                            fill_data_sql.display()
+                        )
+                    })
+                    .unwrap();
+                apply_separately(&pool, &fill_data_sql).unwrap();
+            });
+        }
+        MigrationType::ApplyAndClearData => {
+            tracing::info!("Applying migrations and clearing data");
+            let path = Path::new(&env.migrations_path).join("mysql_up.sql");
+            tracing::info!("Initialising migrations at: {}", env.migrations_path);
+            let span = debug_span!("applying_migration", path = &path.to_str());
+            span.in_scope(|| {
+                let sql = read_to_string(&path)
+                    .inspect_err(|_| {
+                        tracing::error!("Failed to read migration file at path: {}", path.display())
+                    })
+                    .unwrap();
+                apply_transaction(&pool, &sql).unwrap();
+            });
+            tracing::info!("Clearing database");
+
+            let span = debug_span!("Filling sql data", path = &path.to_str());
+            let fill_data_sql = Path::new(&env.migrations_path).join("mysql_drop_data.sql");
+            span.in_scope(|| {
+                let fill_data_sql = read_to_string(&fill_data_sql)
+                    .inspect_err(|_| {
+                        tracing::error!(
+                            "Failed to read drop data file at path: {}",
+                            fill_data_sql.display()
+                        )
+                    })
+                    .unwrap();
+                apply_transaction(&pool, &fill_data_sql).unwrap();
+            });
         }
     };
-    tracing::info!("Initialising migrations at: {}", env.migrations_path);
-    let read_sql_span = debug_span!("reading_sql", path = &path.to_str());
-    let sql = read_sql_span.in_scope(|| {
-        read_to_string(&path)
-            .inspect_err(|_| {
-                tracing::error!("Failed to read migration file at path: {}", path.display())
-            })
-            .unwrap()
-    });
-    let timer = std::time::Instant::now();
-    apply_transaction(pool, &sql).unwrap();
 
-    let kv = &[KeyValue::new("is_revert", env.is_revert)];
+    let kv = &[KeyValue::new(
+        "migration_mode",
+        Into::<&'static str>::into(env.migration_type),
+    )];
     if let Some(migrations_counter) = MIGRATIONS_COUNTER.get() {
         migrations_counter.add(1, kv);
     }

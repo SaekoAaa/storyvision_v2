@@ -9,6 +9,7 @@ pub struct Environment {
     pub db_address: String,
     pub app_port: u16,
     pub app_address: String,
+    pub salt: String,
 }
 impl Environment {
     pub fn load_env() -> anyhow::Result<Self> {
@@ -19,6 +20,9 @@ impl Environment {
             mysql_password: var("MYSQL_PASSWORD").context("MYSQL_PASSWORD")?,
             db_address: var("DB_ADDRESS").unwrap_or(String::from("127.0.0.1")),
             app_address: var("APP_ADDRESS").context("APP_ADDRESS")?,
+            salt: var("SALT")
+                .context("SALT")
+                .unwrap_or("12345salt".to_string()),
             app_port: var("APP_PORT")
                 .unwrap_or(String::from("4000"))
                 .parse()

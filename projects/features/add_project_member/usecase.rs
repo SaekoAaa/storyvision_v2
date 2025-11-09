@@ -22,8 +22,8 @@ pub async fn add_member_to_project_usecase(
     if project_owner_id != Some(owner_id) {
         return Err(AddProjectMemberError::NotAProjectOwner);
     }
-    let is_in_project: u32 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM project_members WHERE project_id = ? AND member_id = ?",
+    let is_in_project: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM project_members WHERE project_id = ? AND user_id = ?",
     )
     .bind(project_id)
     .bind(member_id)
@@ -36,7 +36,7 @@ pub async fn add_member_to_project_usecase(
         ));
     }
     sqlx::query(
-        "INSERT INTO project_members (project_id, member_id)
+        "INSERT INTO project_members (project_id, user_id)
                     VALUES (?, ?)",
     )
     .bind(project_id)

@@ -5,6 +5,7 @@ use {
     argon2::password_hash::{SaltString, rand_core::OsRng},
     auth_service::{db::init_database, features::common::AuthState},
     axum_server::Handle,
+    base64::{Engine, engine::general_purpose},
     std::{
         net::{Ipv4Addr, SocketAddr},
         str::FromStr,
@@ -33,10 +34,11 @@ async fn main() {
         .await
         .expect("Connecting to database");
     let db_ptr = Arc::new(db);
+    let encoded_salt = general_purpose::STANDARD.encode(env.salt);
     let auth_state = Arc::new(AuthState {
         pool: db_ptr.clone(),
         token_secret: Uuid::new_v4().to_string(),
-        saltstring: SaltString::generate(OsRng),
+        saltstring: SaltString::from_b64(&encoded_salt).expect("Should generate salt"),
     });
     let router = init_openapi(init_router(auth_state.clone()));
     let handle = Handle::new();

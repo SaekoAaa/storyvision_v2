@@ -3,6 +3,7 @@ use {
         infrastructure::app,
         observability::{metrics::init_metrics, otel::OtelGuard, tracing::init_traces},
     },
+    dotenvy::var,
     opentelemetry::trace::TracerProvider as _,
     tracing::{info_span, level_filters::LevelFilter},
     tracing_opentelemetry::OpenTelemetryLayer,
@@ -11,21 +12,36 @@ use {
 mod infrastructure;
 mod observability;
 fn main() {
-    let collector_url = "http://127.0.0.1:4329/v1";
-    let traces = init_traces(&format!("{}/traces", collector_url));
-    let tracer = traces.tracer("Migrator tracing");
-    // let telemetry = tracing_opentelemetry::layer()
-    // .with_level(true)
-    // .with_tracer(tracer);
     let level = tracing_subscriber::fmt::layer().with_filter(LevelFilter::INFO);
-    tracing_subscriber::registry()
-        .with(level)
-        .with(OpenTelemetryLayer::new(tracer))
-        .init();
-    let metrics = init_metrics(&format!("{}/metrics", collector_url)).unwrap();
+    let mut subscriber = tracing_subscriber::registry().with(level);
+
+    let collector_url = var("COLLECTOR_URL").ok();
+    let use_traces = var("WITH_TRACING").map_or(false, |t| t == "true");
+
+    let mut tracing_provider = None;
+    if use_traces {
+        if let Some(collector_url) = &collector_url {
+            let traces = init_traces(&format!("{}/traces", collector_url));
+            let tracer = traces.tracer("Migrator tracing");
+            subscriber.with(OpenTelemetryLayer::new(tracer)).init();
+            tracing_provider = Some(traces)
+        } else {
+            subscriber.init();
+        }
+    } else {
+        subscriber.init();
+    }
+    let use_metrics = var("WITH_METRICS").map_or(false, |t| t == "true");
+    let mut metrics_provider = None;
+    if use_metrics {
+        if let Some(collector_url) = collector_url {
+            let metrics = init_metrics(&format!("{}/metrics", collector_url)).unwrap();
+            metrics_provider = Some(metrics)
+        }
+    }
     let _otel_guard = OtelGuard {
-        tracer_provider: traces,
-        meter_provider: metrics,
+        tracer_provider: tracing_provider,
+        meter_provider: metrics_provider,
     };
     if let Err(e) = dotenvy::dotenv() {
         tracing::debug!("Dotenv import 2 failed: {}. Fine for docker", e);
