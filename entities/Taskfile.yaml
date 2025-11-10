@@ -1,0 +1,9 @@
+version: "3"
+tasks:
+  run:
+    env:
+      TEST_USER_DATA: true
+    cmd: cargo r
+    aliases:
+      - r
+    desc: Run the application with test data
