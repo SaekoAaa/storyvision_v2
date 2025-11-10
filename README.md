@@ -42,20 +42,14 @@ docker compose up -d --build
 | 2 | Авторизация и заполнение БД                    | ✅ Завершено    |
 | 3 | API проектов, страница GitHub                  | ✅ Завершено    |
 | 4 | Документирование и тестирование API            | ✅ Завершено    |
-| 5 | API героев и событий, метрики                  | 🚧 В работе    |
+| 5 | API героев и событий, метрики                  | ✅ Завершено    |
 | 6 | Подключение Neo4j                             | 🚧 Планируется |
-| 7 | Тестирование Service layer, Postman collection | 🚧 В процессе  |
+| 7 | Тестирование Service layer, Postman collection | ✅ Завершено  |
 
 ## API
 
 Документация доступна по эндпоинту:
-
-```
-/rapidoc
-```
-
-(генерируется автоматически через `utoipa`)
-
+postman.json
 
 ## Идеи для развития
 
@@ -67,7 +61,7 @@ docker compose up -d --build
 
 ## Технологии
 
-* **Rust**, `axum`, `tokio`, `sqlx`, `utoipa`
+* **Rust**, `axum`, `tokio`, `sqlx`
 * **MySQL / Neo4j**
 * **Docker Compose**
 * **Postman**, **Figma**
