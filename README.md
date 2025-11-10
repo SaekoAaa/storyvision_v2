@@ -80,6 +80,12 @@ postman.json
 
 <img width="875" height="171" alt="image" src="https://github.com/user-attachments/assets/53233289-96cc-45c6-a2d0-9c63da38d340" />
 
+### Сборка дорожек
+<img width="1064" height="824" alt="image" src="https://github.com/user-attachments/assets/7a1306cc-2ac0-4068-bba2-30608daa9357" />
+
+### Логирование
+![telegram-cloud-photo-size-2-5226562242881458836-y](https://github.com/user-attachments/assets/2784955e-e775-4450-b117-7d4c4dc83c34)
+
 ---
 
 **Storyvision** — часть проекта *StoryMotion*
