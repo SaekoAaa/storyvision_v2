@@ -6,6 +6,7 @@ pub struct Project {
     pub name: String,
     pub valid_name: String,
     pub owner_id: u64,
+    pub owner_name: String,
     pub description: String,
 }
 pub type ProjectId = u64;

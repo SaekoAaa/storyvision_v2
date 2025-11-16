@@ -1,18 +1,16 @@
-use std::sync::Arc;
-use axum::extract::State;
-use axum::http::StatusCode;
-use axum::Json;
-use axum::response::IntoResponse;
-use axum_extra::extract::CookieJar;
-use utoipa::OpenApi;
-use crate::features::common::api_response::HandlerResult;
 use crate::features::common::AuthState;
+use crate::features::common::api_response::HandlerResult;
 use crate::features::common::openapi::{BaseErrorResponseSchema, InternalErrorResponse};
 use crate::features::refresh_token::dto::RefreshTokenResponse;
 use crate::features::refresh_token::error::RefreshTokenErrorResponse;
 use crate::features::refresh_token::usecase::refresh_token_usecase;
-
-
+use axum::Json;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum_extra::extract::CookieJar;
+use std::sync::Arc;
+use utoipa::OpenApi;
 
 #[derive(Debug, OpenApi)]
 #[openapi(paths(handler_refresh_token))]
@@ -41,7 +39,9 @@ pub async fn handler_refresh_token(
 ) -> HandlerResult<impl IntoResponse, RefreshTokenErrorResponse> {
     match jar.get("refresh") {
         Some(token) => {
-            let access_token = refresh_token_usecase(token.value(), &app_state.token_secret, &app_state.pool).await?;
+            let access_token =
+                refresh_token_usecase(token.value(), &app_state.token_secret, &app_state.pool)
+                    .await?;
             Ok((
                 StatusCode::OK,
                 Json::from(RefreshTokenResponse { access_token }),

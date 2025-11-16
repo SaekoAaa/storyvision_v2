@@ -1,8 +1,8 @@
+use crate::{constants::ACCESS_EXPIRY_SECONDS, features::register_user::error::RegisterError};
 use {
     crate::{
         constants,
-        model::*
-        ,
+        model::*,
         utils::{hash::hash_password, jwt::create_jwt_token},
     },
     argon2::password_hash::SaltString,
@@ -10,7 +10,6 @@ use {
     std::net::SocketAddr,
     time::{Duration, OffsetDateTime},
 };
-use crate::features::register_user::error::RegisterError;
 
 pub struct RegisterData {
     pub id: u64,
@@ -26,6 +25,13 @@ pub async fn register_user(
     token_secret: &str,
     connect_info: SocketAddr,
 ) -> Result<RegisterData, RegisterError> {
+    if let Some(_) = sqlx::query("select id from users where email = ?")
+        .bind(email)
+        .fetch_optional(pool)
+        .await?
+    {
+        return Err(RegisterError::EmailAlreadyExists);
+    }
     let hashed_password = hash_password(password, saltstring)?;
     sqlx::query(
         r#"
@@ -60,7 +66,20 @@ pub async fn register_user(
     .execute(pool)
     .await
     .map(|_| ())?;
-    let access_token = create_jwt_token(id, Duration::minutes(15), token_secret)?;
+    let project_list: Vec<u64> =
+        sqlx::query_as("select project_id from project_members where user_id = ?")
+            .bind(id)
+            .fetch_all(pool)
+            .await?
+            .into_iter()
+            .map(|e: ProjectId| e.id)
+            .collect();
+    let access_token = create_jwt_token(
+        project_list,
+        id,
+        Duration::seconds(ACCESS_EXPIRY_SECONDS),
+        token_secret,
+    )?;
     Ok(RegisterData {
         id,
         refresh_token: refresh_token.to_string(),

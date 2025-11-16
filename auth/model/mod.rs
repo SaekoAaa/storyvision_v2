@@ -9,7 +9,11 @@ pub struct User {
     pub created_at: OffsetDateTime,
     pub role: String,
 }
-
+#[derive(Clone, Debug)]
+pub struct UserData {
+    pub id: u64,
+    pub role: String,
+}
 #[derive(FromRow, Debug)]
 pub struct UserId {
     pub id: u64,
@@ -22,4 +26,8 @@ pub struct Session {
     pub revoked: bool,
     pub device_info: Option<String>,
     pub ip_address: Option<String>,
+}
+#[derive(FromRow)]
+pub struct ProjectId {
+    pub id: u64,
 }

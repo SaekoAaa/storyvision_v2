@@ -1,6 +1,6 @@
-use crate::features::refresh_token::error::RefreshTokenError;
-use crate::model::User;
+use crate::model::{ProjectId, User, UserId};
 use crate::utils::jwt::create_jwt_token;
+use crate::{constants::ACCESS_EXPIRY_SECONDS, features::refresh_token::error::RefreshTokenError};
 use sha2::{Digest, Sha256};
 use sqlx::MySqlPool;
 use time::Duration;
@@ -10,14 +10,31 @@ pub async fn refresh_token_usecase(
     token_secret: &str,
     pool: &MySqlPool,
 ) -> Result<String, RefreshTokenError> {
-    let refresh_token_hash = format!("{:x}", Sha256::digest(refresh_token.as_bytes()));
-    match sqlx::query_as(r#"SELECT user_id FROM sessions WHERE refresh_token_hash = ? LIMIT 1"#)
-        .bind(refresh_token_hash)
-        .fetch_optional(pool)
-        .await?
+    let refresh_token_hash = format!("{:X}", Sha256::digest(refresh_token.as_bytes()));
+    tracing::debug!("token: {}", refresh_token);
+    tracing::debug!("Debug: {}", refresh_token_hash);
+    match sqlx::query_as(
+        r#"SELECT user_id as id FROM sessions WHERE refresh_token_hash = ? LIMIT 1"#,
+    )
+    .bind(refresh_token_hash)
+    .fetch_optional(pool)
+    .await?
     {
-        Some(User { id, .. }) => {
-            let new_access_token = create_jwt_token(id, Duration::minutes(15), &token_secret)?;
+        Some(UserId { id }) => {
+            let project_list: Vec<u64> =
+                sqlx::query_as("select project_id from project_members where user_id = ?")
+                    .bind(id)
+                    .fetch_all(pool)
+                    .await?
+                    .into_iter()
+                    .map(|e: ProjectId| e.id)
+                    .collect();
+            let new_access_token = create_jwt_token(
+                project_list,
+                id,
+                Duration::seconds(ACCESS_EXPIRY_SECONDS),
+                &token_secret,
+            )?;
             Ok(new_access_token)
         }
         None => Err(RefreshTokenError::InvalidRefreshToken),

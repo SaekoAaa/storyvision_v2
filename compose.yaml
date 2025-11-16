@@ -4,16 +4,14 @@ services:
     image: mysql:latest
     restart: always
     ports:
-      - 3306:3306
-    # volumes:
-    #   - mysql_data:/var/lib/mysql
+      - "3306:3306"
     env_file:
       - .env
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
     healthcheck:
       test:
         [
@@ -27,5 +25,53 @@ services:
       interval: 3s
       timeout: 3s
       retries: 3
-volumes:
-  mysql_data:
+
+  auth_server:
+    build:
+      context: .
+      target: final
+    image: auth-service:2.0.0-b914a43
+    container_name: auth_server
+    environment:
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_PORT: 3306
+      MYSQL_ADDRESS: "mysql"
+      APP_ADDRESS: "0.0.0.0"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      DB_ADDRESS: "mysql"
+      SALT: "12345salt"
+    depends_on:
+      - mysql
+    expose:
+      - "4000"
+
+  projects_server:
+    container_name: projects_server
+    image: projects-service:2.0.2-b914a43
+    environment:
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_PORT: 3306
+      MYSQL_ADDRESS: "mysql"
+      APP_ADDRESS: "0.0.0.0"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      DB_ADDRESS: "mysql"
+      SALT: "12345salt"
+    depends_on:
+      - mysql
+    expose:
+      - "4000"
+
+  nginx:
+    image: nginx:latest
+    container_name: gateway
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth_server
+      - projects_server

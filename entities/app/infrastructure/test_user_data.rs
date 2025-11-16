@@ -10,6 +10,7 @@ pub fn insert_test_user_data(router: Router) -> Router {
         let test_user_data = UserData {
             id: 1,
             role: "admin".to_string(),
+            projects_list: vec![1, 2, 3],
         };
         let extensions = req.extensions_mut();
         extensions.insert(test_user_data);

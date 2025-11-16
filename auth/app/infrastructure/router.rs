@@ -1,8 +1,20 @@
-use auth_service::features::check_db_health::handler::db_healtcheck_handler;
+use crate::infrastructure::mw_validate_jwt::mw_validate_access_token;
 use auth_service::features::login_user::handler::handler_login_user;
 use auth_service::features::logout_user::handler::handler_logout_user;
 use auth_service::features::refresh_token::handler::handler_refresh_token;
-use axum::routing::get;
+use auth_service::features::{
+    check_db_health::handler::db_healtcheck_handler, me::handler::handler_get_user,
+};
+use auth_service::model::UserData;
+use auth_service::utils::jwt::{JWTClaims, validate_jwt_token};
+use axum::Json;
+use axum::extract::State;
+use axum::middleware::{from_fn, from_fn_with_state};
+use axum::response::{IntoResponse, Response};
+use axum::{extract::Request, middleware::Next, routing::get};
+use jsonwebtoken::TokenData;
+use serde_json::json;
+
 use {
     auth_service::{
         constants::ROUTER_VERSION_PATH,
@@ -30,8 +42,16 @@ pub fn init_router(auth_state: Arc<AuthState>) -> Router {
                 Router::new()
                     .route("/register", post(handler_register_user))
                     .route("/login", post(handler_login_user))
+                    .merge(
+                        Router::new()
+                            .route("/logout", post(handler_logout_user))
+                            .route("/me", get(handler_get_user))
+                            .layer(from_fn_with_state(
+                                auth_state.clone(),
+                                mw_validate_access_token,
+                            )),
+                    )
                     .route("/refresh", post(handler_refresh_token))
-                    .route("/logout", post(handler_logout_user))
                     .with_state(auth_state.clone()),
             ),
         )

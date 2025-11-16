@@ -18,7 +18,7 @@ pub enum RefreshTokenError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum RefreshTokenErrorResponse {
-    #[error("User login failed: {0}")]
+    #[error("Refresh token failed: {0}")]
     RefreshTokenError(#[from] RefreshTokenError),
     #[error("Failed to deserialize JSON: {0}")]
     JsonDeserializationError(#[from] JsonDeserializerRejection),
@@ -27,17 +27,10 @@ pub enum RefreshTokenErrorResponse {
     #[error("Refresh token expired or invalid")]
     RefreshTokenInvalid,
 }
+
 impl IntoResponse for RefreshTokenErrorResponse {
     fn into_response(self) -> axum::response::Response {
-        let err = self.error_response();
-        (
-            err.status,
-            Json(json!({
-                "error": err.error,
-                "message": err.message
-            })),
-        )
-            .into_response()
+        ApiError::into_response(self)
     }
 }
 

@@ -8,6 +8,7 @@ pub struct ProjectResponse {
     pub name: String,
     pub valid_name: String,
     pub owner_id: u64,
+    pub owner_name: String,
     pub description: String,
 }
 impl From<Project> for ProjectResponse {
@@ -17,6 +18,7 @@ impl From<Project> for ProjectResponse {
             name: value.name,
             valid_name: value.valid_name,
             owner_id: value.owner_id,
+            owner_name: value.owner_name,
             description: value.description,
         }
     }

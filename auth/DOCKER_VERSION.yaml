@@ -2,3 +2,6 @@ builds:
 - 1.1.1:
   name: auth-service:1.1.1-b483cf3
   datetime: 2025-11-10 13:02:01
+- 2.0.0:
+  name: auth-service:2.0.0-b914a43
+  datetime: 2025-11-16T18:33:45.2609568+03:00

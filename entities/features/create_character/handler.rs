@@ -1,17 +1,43 @@
-use axum::{Extension, extract::State, http::StatusCode, response::IntoResponse};
-use axum_extra::extract::JsonDeserializer;
+use axum::{
+    Json,
+    extract::{Extension, State},
+    http::StatusCode,
+    response::IntoResponse,
+};
+use std::sync::Arc;
+use validator::Validate;
 
-use crate::features::{
-    common::{EntityState, UserData, api_response::HandlerResult},
-    create_character::dto::CreateCharacterRequest,
+use crate::features::common::{AppState, UserData, api_response::HandlerResult};
+
+use super::{
+    dto::{CreateCharacterRequest, CreateCharacterResponse},
+    error::{CreateCharacterError, CreateCharacterErrorResponse},
+    usecase::create_character_usecase,
 };
 
 pub async fn create_character_handler(
-    State(state): State<EntityState>,
-    Extension(user): Extension<UserData>,
-    serial_data: JsonDeserializer<super::dto::CreateCharacterRequest<'_>>,
-) -> HandlerResult<impl IntoResponse, super::error::ErrorResponse> {
-    let char: CreateCharacterRequest = serial_data.deserialize()?;
-    super::usecase::create_character_usecase(&state.pool, char, user.id).await?;
-    Ok(StatusCode::OK)
+    State(state): State<Arc<AppState>>,
+    Extension(user_data): Extension<UserData>,
+    Json(payload): Json<CreateCharacterRequest>,
+) -> HandlerResult<impl IntoResponse, CreateCharacterErrorResponse> {
+    // Валидация входных данных
+    payload.validate()?;
+
+    // Проверка доступа к проекту
+    if !user_data.projects_list.contains(&payload.project_id) {
+        return Err(CreateCharacterError::AccessDenied.into());
+    }
+
+    // Создание персонажа
+    let character = create_character_usecase(user_data.id, payload, &state.graph).await?;
+
+    Ok((
+        StatusCode::CREATED,
+        Json(CreateCharacterResponse {
+            id: character.id,
+            project_id: character.project_id,
+            name: character.name,
+            description: character.description,
+        }),
+    ))
 }

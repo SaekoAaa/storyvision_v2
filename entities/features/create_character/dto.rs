@@ -1,14 +1,26 @@
 use std::borrow::Cow;
 
-#[derive(Clone, serde::Deserialize)]
-pub struct CreateCharacterRequest<'a> {
-    #[serde(borrow)]
-    pub name: Cow<'a, str>,
-    pub age: i32,
-    #[serde(borrow)]
-    pub gender: Cow<'a, str>,
-    #[serde(borrow)]
-    pub description: Cow<'a, str>,
-    pub entity_type_id: u64,
+use serde::{Deserialize, Serialize};
+use validator::Validate;
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct CreateCharacterRequest {
+    #[validate(range(min = 1))]
     pub project_id: u64,
+
+    #[validate(length(min = 1, max = 200))]
+    pub name: String,
+
+    #[validate(length(max = 1000))]
+    pub description: Option<String>,
+
+    pub attributes: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CreateCharacterResponse {
+    pub id: String,
+    pub project_id: u64,
+    pub name: String,
+    pub description: Option<String>,
 }

@@ -9,7 +9,9 @@ tasks:
         sh: "git rev-parse --short HEAD"
       IMAGE_NAME: auth-service
       DATETIME:
-        sh: date '+%Y-%m-%d %H:%M:%S'
+        # sh: date '+%Y-%m-%d %H:%M:%S'
+
+        sh: powershell -Command "Get-Date -Format o"
       VERSION_FILE_NAME: DOCKER_VERSION.yaml
     cmds:
       - |

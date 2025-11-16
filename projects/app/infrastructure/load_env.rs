@@ -24,10 +24,7 @@ impl Environment {
                 .unwrap_or(String::from("4000"))
                 .parse()
                 .unwrap(),
-            test_user_data: var("TEST_USER_DATA")
-                .unwrap_or(String::from("false"))
-                .parse()
-                .unwrap(),
+            test_user_data: var("TEST_USER_DATA").map_or(false, |e| e == "true"),
         })
     }
 }

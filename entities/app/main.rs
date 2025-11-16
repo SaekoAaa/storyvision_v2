@@ -1,6 +1,6 @@
-use crate::infrastructure::test_user_data::insert_test_user_data;
-use entities_service::features::common::EntityState;
-use sqlx::MySqlPool;
+use entities_service::features::common::AppState;
+
+use crate::infrastructure::{init_neo4::init_neo4j, test_user_data::insert_test_user_data};
 
 use {
     crate::infrastructure::{load_env::Environment, router::init_router, shutdown::shutdown_task},
@@ -25,19 +25,16 @@ async fn main() {
         .with_max_level(LevelFilter::DEBUG)
         .init();
 
-    let mysql_connection_string = format!(
-        "mysql://{}:{}@{}:{}/{}?charset=utf8mb4",
-        env.mysql_user, env.mysql_password, env.db_address, env.mysql_port, env.mysql_database
-    );
-    tracing::debug!(
-        "Connecting to database with url: {}",
-        mysql_connection_string
-    );
-    let pool = MySqlPool::connect(&mysql_connection_string)
-        .await
-        .expect("Failed to connect to database");
     tracing::debug!("Connected to database");
-    let auth_state = Arc::new(EntityState { pool: pool.clone() });
+    let graph = init_neo4j(&env.neo4j_uri, &env.neo4j_user, &env.neo4j_password)
+        .await
+        .expect("Failed to connect to Neo4j");
+
+    tracing::debug!("Connected to Neo4j");
+    let auth_state = Arc::new(AppState {
+        graph: Arc::new(graph),
+        token_secret: "secret".to_string(),
+    });
     let mut router = init_router(auth_state.clone());
     if env.test_user_data {
         tracing::warn!("Using test user data");
@@ -52,7 +49,7 @@ async fn main() {
             .handle(handle.clone())
             .serve(router.into_make_service()),
     );
-    let st = shutdown_task(handle, auth_state);
+    let st = shutdown_task(handle);
     select! {
         _ = st => {},
         _ = app_task => {}

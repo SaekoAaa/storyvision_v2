@@ -4,6 +4,7 @@ pub mod api_error;
 pub mod api_response;
 pub struct ProjectState {
     pub pool: sqlx::MySqlPool,
+    pub token_secret: String,
 }
 #[derive(Clone)]
 pub struct UserData {

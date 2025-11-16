@@ -35,9 +35,12 @@ async fn main() {
         .expect("Connecting to database");
     let db_ptr = Arc::new(db);
     let encoded_salt = general_purpose::STANDARD.encode(env.salt);
+
+    // TODO token secret
+
     let auth_state = Arc::new(AuthState {
         pool: db_ptr.clone(),
-        token_secret: Uuid::new_v4().to_string(),
+        token_secret: "secret".to_string(),
         saltstring: SaltString::from_b64(&encoded_salt).expect("Should generate salt"),
     });
     let router = init_openapi(init_router(auth_state.clone()));

@@ -1,6 +1,7 @@
 use axum::routing::get;
 use entities_service::features::{
-    common::EntityState, create_character::handler::create_character_handler,
+    common::AppState, create_character::handler::create_character_handler,
+    list_characters::handler::list_characters_handler,
 };
 use {
     axum::{Router, http::StatusCode, routing::post},
@@ -9,7 +10,7 @@ use {
     tower_http::{cors::CorsLayer, trace::TraceLayer},
 };
 
-pub fn init_router(state: Arc<EntityState>) -> Router {
+pub fn init_router(state: Arc<AppState>) -> Router {
     Router::new()
         .route(
             "/healthcheck",

@@ -1,0 +1,10 @@
+builds:
+- 1.0.0:
+  name: projects-service:1.0.0-b914a43
+  datetime: 2025-11-16T17:31:41.6579803+03:00
+- 1.0.1:
+  name: projects-service:1.0.1-b914a43
+  datetime: 2025-11-16T17:39:38.8717325+03:00
+- 2.0.2:
+  name: projects-service:2.0.2-b914a43
+  datetime: 2025-11-16T19:09:04.0178395+03:00

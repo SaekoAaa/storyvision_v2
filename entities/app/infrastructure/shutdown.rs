@@ -1,11 +1,12 @@
 use axum_server::Handle;
+#[cfg(windows)]
+use entities_service::features::common::AppState;
 use std::time::Duration;
 
 const SHUTDOWN_GRACE_DEFAULT: u64 = 3;
 #[cfg(windows)]
 pub async fn shutdown_task(
     handle: Handle,
-    app_state: Arc<ProjectState>,
     // metrics_provider: Option<SdkMeterProvider>,
 ) {
     let grace_duration = match std::env::var("SHUTDOWN_GRACE_SECS") {
@@ -19,7 +20,6 @@ pub async fn shutdown_task(
         Err(_) => SHUTDOWN_GRACE_DEFAULT,
     };
     let res = tokio::signal::ctrl_c().await;
-    app_state.pool.close().await;
     // if let Some(metrics_provider) = metrics_provider {
     //     metrics_provider
     //         .shutdown()
@@ -32,8 +32,6 @@ pub async fn shutdown_task(
 
 #[cfg(unix)]
 use {entities_service::features::common::EntityState, std::sync::Arc};
-#[cfg(windows)]
-use {projects_service::features::common::EntityState, std::sync::Arc};
 #[cfg(unix)]
 
 pub async fn shutdown_task(

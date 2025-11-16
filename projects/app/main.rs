@@ -1,4 +1,8 @@
-use crate::infrastructure::test_user_data::insert_test_user_data;
+use crate::infrastructure::{
+    mw_validate_jwt::{self, mw_validate_access_token},
+    test_user_data::insert_test_user_data,
+};
+use axum::middleware::{from_fn, from_fn_with_state};
 use projects_service::features::common::ProjectState;
 use sqlx::MySqlPool;
 
@@ -37,11 +41,18 @@ async fn main() {
         .await
         .expect("Failed to connect to database");
     tracing::debug!("Connected to database");
-    let auth_state = Arc::new(ProjectState { pool: pool.clone() });
-    let mut router = init_router(auth_state.clone());
+
+    let token_secret = "secret".to_string();
+    let state = Arc::new(ProjectState {
+        pool: pool.clone(),
+        token_secret,
+    });
+    let mut router = init_router(state.clone());
     if env.test_user_data {
         tracing::warn!("Using test user data");
         router = insert_test_user_data(router);
+    } else {
+        router = router.layer(from_fn_with_state(state.clone(), mw_validate_access_token));
     }
     let handle = Handle::new();
     let ipv4 = Ipv4Addr::from_str(&env.app_address)
@@ -52,7 +63,7 @@ async fn main() {
             .handle(handle.clone())
             .serve(router.into_make_service()),
     );
-    let st = shutdown_task(handle, auth_state);
+    let st = shutdown_task(handle, state);
     select! {
         _ = st => {},
         _ = app_task => {}

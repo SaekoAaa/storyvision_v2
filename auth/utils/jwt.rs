@@ -8,9 +8,11 @@ pub struct JWTClaims {
     pub iat: i64,
     pub exp: i64,
     pub role: String,
+    pub projects: Vec<u64>,
 }
 
 pub fn create_jwt_token(
+    project_list: Vec<u64>,
     user_id: u64,
     expiry_offset: Duration,
     secret: &str,
@@ -22,6 +24,7 @@ pub fn create_jwt_token(
         iat: current_time.unix_timestamp(),
         exp: expires_at.unix_timestamp(),
         role: String::from("user"),
+        projects: project_list,
     };
     encode(
         &Header::default(),
@@ -48,9 +51,9 @@ pub mod test {
     #[test]
     fn test_validate_jwt() -> anyhow::Result<()> {
         let secret = "123";
-        let jwt = create_jwt_token(5, Duration::minutes(3), secret)?;
+        let jwt = create_jwt_token(vec![], 5, Duration::minutes(3), secret)?;
         assert!(validate_jwt_token(&jwt, secret).is_ok());
-        let jwt2 = create_jwt_token(5, Duration::minutes(-3), secret)?;
+        let jwt2 = create_jwt_token(vec![], 5, Duration::minutes(-3), secret)?;
         assert!(validate_jwt_token(&jwt2, secret).is_err());
         Ok(())
     }
