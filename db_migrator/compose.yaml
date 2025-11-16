@@ -12,17 +12,23 @@ services:
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
       MYSQL_PORT: 3306
-      MYSQL_ADDRESS: "127.0.0.1"
+      MYSQL_ADDRESS: "mysql"
       MYSQL_DATABASE: "app_db"
-    secrets:
-      - db_user
-      - db_password
+      MIGRATIONS_PATH: /migrations
+      COLLECTOR_URL: "http://otel:4318/v1"
+      WITH_TRACING: "true"
+      WITH_METRICS: "true"
+    volumes:
+      - ./migrations:/migrations
+    # secrets:
+    #   - db_user
+    #   - db_password
   mysql:
     container_name: mysql
     image: mysql:latest
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
-      MYSQL_DATABASE: "storyvision"
+      MYSQL_DATABASE: "app_db"
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
     expose:
@@ -44,7 +50,7 @@ services:
     image: otel/opentelemetry-collector-contrib
     command: --config=/etc/otelcol/config.yaml
     ports:
-      - "4329:4318" # HTTP
+      - "4318:4318" # HTTP
     #      - "9464:9464"  # Prometheus scrape endpoint
     volumes:
       - ./config/otel_collector.yaml:/etc/otelcol/config.yaml:ro
@@ -61,9 +67,15 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
       LOG_LEVEL: debug
-
-secrets:
-  db_user:
-    file: ./secrets/mysql_user.txt
-  db_password:
-    file: ./secrets/mysql_password.txt
+  prom:
+    image: prom/prometheus
+    ports:
+      - "9099:9090"
+    command: --config.file=/etc/prometheus/prometheus.yaml
+    volumes:
+      - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+# secrets:
+#   db_user:
+#     file: ./secrets/mysql_user.txt
+#   db_password:
+#     file: ./secrets/mysql_password.txt

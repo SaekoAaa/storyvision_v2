@@ -49,7 +49,7 @@ pub mod test {
     fn test_validate_jwt() -> anyhow::Result<()> {
         let secret = "123";
         let jwt = create_jwt_token(5, Duration::minutes(3), secret)?;
-        assert!(validate_jwt_token(&jwt, secret).is_err());
+        assert!(validate_jwt_token(&jwt, secret).is_ok());
         let jwt2 = create_jwt_token(5, Duration::minutes(-3), secret)?;
         assert!(validate_jwt_token(&jwt2, secret).is_err());
         Ok(())

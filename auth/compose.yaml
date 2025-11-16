@@ -1,0 +1,46 @@
+services:
+  server:
+    build:
+      context: .
+      target: final
+    container_name: server
+    environment:
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_PORT: 3306
+      MYSQL_ADDRESS: "mysql"
+      APP_ADDRESS: "0.0.0.0"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      DB_ADDRESS: "mysql2"
+      SALT: "asoidweiubcwecu"
+    depends_on:
+      - mysql
+    ports:
+      - "4000:4000"
+
+  mysql:
+    image: mysql:8.3
+    container_name: mysql2
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # networks:
+    #   - app-net
+
+volumes:
+  mysql_data:
+    driver: local
+# networks:
+#   app-net:
+#     driver: bridge

@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS relations;
+DROP TABLE IF EXISTS relation_types;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS event_types;
 DROP TABLE IF EXISTS characters;

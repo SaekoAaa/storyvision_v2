@@ -59,6 +59,8 @@ CREATE TABLE IF NOT EXISTS characters (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     project_id BIGINT UNSIGNED NOT NULL,
     hero_name VARCHAR(254) NOT NULL,
+    age INT,
+    gender VARCHAR(254),
     description TEXT,
     entity_type_id BIGINT UNSIGNED NOT NULL,
     source_media VARCHAR(254), -- Game, movie, book, etc.
@@ -83,4 +85,18 @@ CREATE TABLE IF NOT EXISTS events (
     CONSTRAINT fk_event_type FOREIGN KEY (event_type_id) REFERENCES event_types(id) ON DELETE CASCADE,
     -- Unique event name per project
     UNIQUE KEY ux_events_project_name (project_id, event_name)
+);
+CREATE TABLE IF NOT EXISTS relation_types (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(254) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS relations (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    relation_type_id BIGINT UNSIGNED NOT NULL,
+    character_id BIGINT UNSIGNED NOT NULL,
+    event_id BIGINT UNSIGNED NOT NULL,
+    CONSTRAINT fk_relation_type FOREIGN KEY (relation_type_id) REFERENCES relation_types(id) ON DELETE CASCADE,
+    CONSTRAINT fk_relation_character FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE,
+    CONSTRAINT fk_relation_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    UNIQUE KEY ux_relations_type_character_event (relation_type_id, character_id, event_id)
 );
