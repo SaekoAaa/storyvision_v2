@@ -1,3 +1,9 @@
 pub mod common;
 pub mod create_character;
+pub mod create_connection;
+pub mod create_event;
+pub mod create_relation;
+pub mod get_connections;
+pub mod get_events;
+pub mod get_relations;
 pub mod list_characters;
