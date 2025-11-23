@@ -5,5 +5,7 @@ pub mod create_event;
 pub mod create_relation;
 pub mod get_connections;
 pub mod get_events;
+pub mod get_project_graph;
 pub mod get_relations;
+pub mod import_project;
 pub mod list_characters;

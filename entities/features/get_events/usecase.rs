@@ -1,12 +1,12 @@
 use neo4rs::{Graph, query};
 
 use super::{
-    dto::{EventItem, GetEventsPagination, GetEventsRequest, GetEventsResponse},
+    dto::{EventItem, GetEventsPagination, GetEventsResponse},
     error::GetEventsError,
 };
 
 pub async fn get_events_usecase(
-    req: GetEventsRequest,
+    project_id: u64,
     pagination: GetEventsPagination,
     graph: &Graph,
 ) -> Result<GetEventsResponse, GetEventsError> {
@@ -23,14 +23,14 @@ pub async fn get_events_usecase(
                 OR e.location CONTAINS $search
              RETURN count(e) as total",
         )
-        .param("project_id", req.project_id as i64)
+        .param("project_id", project_id as i64)
         .param("search", search.clone())
     } else {
         query(
             "MATCH (e:Event {project_id: $project_id})
              RETURN count(e) as total",
         )
-        .param("project_id", req.project_id as i64)
+        .param("project_id", project_id as i64)
     };
 
     let mut count_result = graph.execute(count_query).await?;
@@ -57,7 +57,7 @@ pub async fn get_events_usecase(
              SKIP $offset
              LIMIT $limit",
         )
-        .param("project_id", req.project_id as i64)
+        .param("project_id", project_id as i64)
         .param("search", search.clone())
         .param("offset", offset as i64)
         .param("limit", per_page as i64)
@@ -74,7 +74,7 @@ pub async fn get_events_usecase(
              SKIP $offset
              LIMIT $limit",
         )
-        .param("project_id", req.project_id as i64)
+        .param("project_id", project_id as i64)
         .param("offset", offset as i64)
         .param("limit", per_page as i64)
     };

@@ -2,16 +2,18 @@ use std::sync::Arc;
 
 use axum::{
     Json,
-    extract::{Extension, Query, State},
+    extract::{Extension, Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
 };
 use validator::Validate;
 
-use crate::features::common::{AppState, UserData, api_response::HandlerResult};
+use crate::features::{
+    common::{AppState, UserData, api_response::HandlerResult},
+    get_connections::dto::GetConnectionsQuery,
+};
 
 use super::{
-    dto::{GetConnectionsPagination, GetConnectionsRequest, GetConnectionsResponse},
     error::{GetConnectionsError, GetConnectionsErrorResponse},
     usecase::get_connections_usecase,
 };
@@ -19,17 +21,16 @@ use super::{
 pub async fn get_connections_handler(
     State(state): State<Arc<AppState>>,
     Extension(user_data): Extension<UserData>,
-    Query(pagination): Query<GetConnectionsPagination>,
-    Json(request): Json<GetConnectionsRequest>,
+    Query(query): Query<GetConnectionsQuery>,
+    Path(project_id): Path<u64>,
 ) -> HandlerResult<impl IntoResponse, GetConnectionsErrorResponse> {
-    pagination.validate()?;
-    request.validate()?;
+    query.validate()?;
 
-    if !user_data.projects_list.contains(&request.project_id) {
+    if !user_data.projects_list.contains(&project_id) {
         return Err(GetConnectionsError::AccessDenied.into());
     }
 
-    let response = get_connections_usecase(request, pagination, &state.graph).await?;
+    let response = get_connections_usecase(query, &state.graph, project_id).await?;
 
     Ok((StatusCode::OK, Json(response)))
 }

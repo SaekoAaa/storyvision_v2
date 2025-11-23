@@ -9,8 +9,9 @@ pub async fn create_connection_usecase(
     user_id: u64,
     req: CreateConnectionRequest,
     graph: &Graph,
+    project_id: u64,
 ) -> Result<Connection, CreateConnectionError> {
-    let project_id_i64 = req.project_id as i64;
+    let project_id_i64 = project_id as i64;
 
     // 1. Проверяем, что обе сущности существуют в проекте
     let check_from = query("MATCH (n {id: $id, project_id: $project_id}) RETURN n LIMIT 1")
@@ -99,7 +100,7 @@ pub async fn create_connection_usecase(
 
     Ok(Connection {
         id,
-        project_id: req.project_id,
+        project_id,
         from_id: req.from_entity_id,
         to_id: req.to_entity_id,
         relation_id: req.relation_id,

@@ -9,13 +9,14 @@ pub async fn create_event_usecase(
     user_id: u64,
     req: CreateEventRequest,
     graph: &Graph,
+    project_id: u64,
 ) -> Result<Event, CreateEventError> {
     // Проверка уникальности имени события в рамках проекта
     let check_query = query(
         "MATCH (e:Event {project_id: $project_id, name: $name})
          RETURN e LIMIT 1",
     )
-    .param("project_id", req.project_id as i64)
+    .param("project_id", project_id as i64)
     .param("name", req.name.clone());
 
     let mut check_result = graph.execute(check_query).await?;
@@ -39,7 +40,7 @@ pub async fn create_event_usecase(
         })",
     )
     .param("id", id.clone())
-    .param("project_id", req.project_id as i64)
+    .param("project_id", project_id as i64)
     .param("name", req.name.clone())
     .param("location", req.location.clone())
     .param("description", req.description.clone())
@@ -57,7 +58,7 @@ pub async fn create_event_usecase(
 
     Ok(Event {
         id,
-        project_id: req.project_id,
+        project_id,
         name: req.name,
         location: req.location,
         description: req.description,

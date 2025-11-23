@@ -3,9 +3,6 @@ use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateEventRequest {
-    #[validate(range(min = 1))]
-    pub project_id: u64,
-
     #[validate(length(min = 1, max = 200))]
     pub name: String,
 

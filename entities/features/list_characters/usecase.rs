@@ -1,7 +1,7 @@
 use neo4rs::{Graph, query};
 
 use super::{
-    dto::{CharacterItem, ListCharactersRequest, ListCharactersResponse},
+    dto::{CharacterItem, ListCharactersResponse},
     error::ListCharactersError,
 };
 

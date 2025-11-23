@@ -31,12 +31,9 @@ pub async fn shutdown_task(
 }
 
 #[cfg(unix)]
-use {entities_service::features::common::EntityState, std::sync::Arc};
-#[cfg(unix)]
 
 pub async fn shutdown_task(
     handle: Handle,
-    state: Arc<EntityState>,
     // metrics_provider: Option<SdkMeterProvider>,
 ) {
     use tokio::{
@@ -60,7 +57,6 @@ pub async fn shutdown_task(
         _ = sigint.recv() => tracing::info!("Shutting down after SIGINT")
     }
 
-    state.pool.close().await;
     // if let Some(metrics_provider) = metrics_provider {
     //     metrics_provider
     //         .shutdown()

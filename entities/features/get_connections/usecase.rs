@@ -1,21 +1,19 @@
 use neo4rs::{Graph, query};
 
-use super::{
-    dto::{
-        ConnectionItem, GetConnectionsPagination, GetConnectionsRequest, GetConnectionsResponse,
-    },
-    error::GetConnectionsError,
+use crate::features::get_connections::dto::{
+    ConnectionItem, GetConnectionsQuery, GetConnectionsResponse,
 };
+use crate::features::get_connections::error::GetConnectionsError;
 
 pub async fn get_connections_usecase(
-    req: GetConnectionsRequest,
-    pagination: GetConnectionsPagination,
+    req: GetConnectionsQuery,
     graph: &Graph,
+    project_id: u64,
 ) -> Result<GetConnectionsResponse, GetConnectionsError> {
-    let page = pagination.page;
-    let per_page = pagination.per_page;
+    let page = req.page;
+    let per_page = req.per_page;
     let offset = (page - 1) * per_page;
-    let project_id_i64 = req.project_id as i64;
+    let project_id_i64 = project_id as i64;
 
     // Формируем where-фильтр динамически
     let mut where_clauses = Vec::<&str>::new();
@@ -64,16 +62,21 @@ pub async fn get_connections_usecase(
         0
     };
 
-    // 2) Получение списка связей
+    // 2) Получение списка связей с именами и типами сущностей
     let list_cypher = format!(
         "MATCH (from)-[c:CONNECTION]->(to)
          {}
-         RETURN c.id            as id,
-                c.from_id       as from_id,
-                c.to_id         as to_id,
-                c.relation_id   as relation_id,
-                c.relation_type as relation_type,
-                toString(c.created_at) as created_at
+         RETURN
+            c.id            as id,
+            c.from_id       as from_id,
+            c.to_id         as to_id,
+            c.relation_id   as relation_id,
+            c.relation_type as relation_type,
+            toString(c.created_at) as created_at,
+            from.name       as from_name,
+            to.name         as to_name,
+            labels(from)[0] as from_type,
+            labels(to)[0]   as to_type
          ORDER BY c.created_at DESC
          SKIP $offset
          LIMIT $limit",
@@ -106,12 +109,21 @@ pub async fn get_connections_usecase(
         let relation_type: String = row.get("relation_type")?;
         let created_at: Option<String> = row.get("created_at")?;
 
+        let from_name: String = row.get("from_name")?;
+        let to_name: String = row.get("to_name")?;
+        let from_type: String = row.get("from_type")?;
+        let to_type: String = row.get("to_type")?;
+
         items.push(ConnectionItem {
             id,
             from_entity_id: from_id,
             to_entity_id: to_id,
             relation_id,
             relation_type,
+            from_name,
+            to_name,
+            from_type,
+            to_type,
             created_at,
         });
     }

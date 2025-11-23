@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     Json,
-    extract::{Extension, State},
+    extract::{Extension, Path, State},
     http::StatusCode,
     response::IntoResponse,
 };
@@ -19,15 +19,16 @@ use super::{
 pub async fn create_relation_handler(
     State(state): State<Arc<AppState>>,
     Extension(user_data): Extension<UserData>,
+    Path(project_id): Path<u64>,
     Json(request): Json<CreateRelationRequest>,
 ) -> HandlerResult<impl IntoResponse, CreateRelationErrorResponse> {
     request.validate()?;
 
-    if !user_data.projects_list.contains(&request.project_id) {
+    if !user_data.projects_list.contains(&project_id) {
         return Err(CreateRelationError::AccessDenied.into());
     }
 
-    let relation = create_relation_usecase(user_data.id, request, &state.graph).await?;
+    let relation = create_relation_usecase(user_data.id, request, &state.graph, project_id).await?;
 
     Ok((
         StatusCode::CREATED,

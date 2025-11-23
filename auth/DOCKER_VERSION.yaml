@@ -5,3 +5,12 @@ builds:
 - 2.0.0:
   name: auth-service:2.0.0-b914a43
   datetime: 2025-11-16T18:33:45.2609568+03:00
+- 2.0.1:
+  name: auth-service:2.0.1-a1c8cd7
+  datetime: 2025-11-23T18:38:19.3927235+03:00
+- 2.0.2:
+  name: auth-service:2.0.2-a1c8cd7
+  datetime: 2025-11-23T18:43:47.1533608+03:00
+- 2.0.3:
+  name: auth-service:2.0.3-a1c8cd7
+  datetime: 2025-11-23T18:47:27.2640238+03:00

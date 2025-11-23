@@ -3,9 +3,6 @@ use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateConnectionRequest {
-    #[validate(range(min = 1))]
-    pub project_id: u64,
-
     #[validate(length(min = 1))]
     pub from_entity_id: String,
 

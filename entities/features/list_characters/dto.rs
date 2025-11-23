@@ -2,11 +2,6 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
-pub struct ListCharactersRequest {
-    #[validate(range(min = 1))]
-    pub project_id: u64,
-}
-#[derive(Debug, Deserialize, Validate)]
 pub struct ListCharacterPagination {
     pub page: u32,
     pub per_page: u32,

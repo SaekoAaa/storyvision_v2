@@ -22,7 +22,7 @@ pub async fn refresh_token_usecase(
     {
         Some(UserId { id }) => {
             let project_list: Vec<u64> =
-                sqlx::query_as("select project_id from project_members where user_id = ?")
+                sqlx::query_as("select project_id as id from project_members where user_id = ?")
                     .bind(id)
                     .fetch_all(pool)
                     .await?

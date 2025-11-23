@@ -1,0 +1,22 @@
+builds:
+- 1.0.0:
+  name: entity-service:1.0.0-a1c8cd7
+  datetime: 2025-11-23T17:25:50.8689299+03:00
+- 1.0.1:
+  name: entity-service:1.0.1-a1c8cd7
+  datetime: 2025-11-23T17:54:52.3767963+03:00
+- 1.0.4:
+  name: entities-service:1.0.4-a1c8cd7
+  datetime: 2025-11-23T17:59:34.7821625+03:00
+- 1.0.5:
+  name: entities-service:1.0.5-a1c8cd7
+  datetime: 2025-11-23T18:28:11.6304533+03:00
+- 1.0.5:
+  name: entities-service:1.0.5-a1c8cd7
+  datetime: 2025-11-23T18:34:03.4166294+03:00
+- 1.1.0:
+  name: entities-service:1.1.0-a1c8cd7
+  datetime: 2025-11-23T21:03:38.0040897+03:00
+- 1.1.1:
+  name: entities-service:1.1.1-a1c8cd7
+  datetime: 2025-11-23T21:09:17.5787417+03:00

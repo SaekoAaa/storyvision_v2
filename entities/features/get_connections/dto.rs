@@ -2,10 +2,7 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
-pub struct GetConnectionsRequest {
-    #[validate(range(min = 1))]
-    pub project_id: u64,
-
+pub struct GetConnectionsQuery {
     /// Если указан, вернем связи, где эта сущность либо from, либо to
     pub entity_id: Option<String>,
 
@@ -14,13 +11,8 @@ pub struct GetConnectionsRequest {
 
     /// Фильтр по строковому типу связи
     pub relation_type: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Validate)]
-pub struct GetConnectionsPagination {
     #[validate(range(min = 1))]
     pub page: u32,
-
     #[validate(range(min = 1, max = 100))]
     pub per_page: u32,
 }
@@ -32,6 +24,10 @@ pub struct ConnectionItem {
     pub to_entity_id: String,
     pub relation_id: String,
     pub relation_type: String,
+    pub from_name: String,
+    pub to_name: String,
+    pub from_type: String,
+    pub to_type: String,
     pub created_at: Option<String>,
 }
 

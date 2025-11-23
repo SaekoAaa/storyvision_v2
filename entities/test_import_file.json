@@ -1,0 +1,72 @@
+{
+  "project_id": 1,
+  "characters": [
+    {
+      "id": "char_alice",
+      "name": "Alice",
+      "description": "Main hero",
+      "attributes": {
+        "age": 25,
+        "role": "protagonist"
+      }
+    },
+    {
+      "id": "char_bob",
+      "name": "Bob",
+      "description": "Friend of Alice",
+      "attributes": {
+        "age": 27,
+        "role": "sidekick"
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "event_meeting",
+      "name": "First Meeting",
+      "location": "City park",
+      "description": "Alice and Bob meet for the first time",
+      "timestamp": "2025-11-22T10:00:00Z",
+      "attributes": {
+        "weather": "sunny"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel_main_role",
+      "name": "Main role",
+      "relation_type": "MAIN_ROLE",
+      "description": "Character plays the main role in an event",
+      "attributes": {}
+    },
+    {
+      "id": "rel_friend",
+      "name": "Friendship",
+      "relation_type": "FRIEND",
+      "description": "Friendship between characters",
+      "attributes": {}
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_alice_main_role",
+      "from_id": "char_alice",
+      "to_id": "event_meeting",
+      "relation_id": "rel_main_role",
+      "attributes": {
+        "strength": 1.0
+      }
+    },
+    {
+      "id": "conn_friendship",
+      "from_id": "char_bob",
+      "to_id": "char_alice",
+      "relation_id": "rel_friend",
+      "attributes": {
+        "since": "2020-01-01",
+        "closeness": 0.9
+      }
+    }
+  ]
+}

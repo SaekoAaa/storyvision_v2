@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Extension, Query, State},
+    extract::{Extension, Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
 };
@@ -13,7 +13,7 @@ use crate::features::{
 };
 
 use super::{
-    dto::{ListCharactersRequest, ListCharactersResponse},
+    dto::ListCharactersResponse,
     error::{ListCharactersError, ListCharactersErrorResponse},
     usecase::list_characters_usecase,
 };
@@ -22,12 +22,13 @@ pub async fn list_characters_handler(
     State(state): State<Arc<AppState>>,
     Extension(user_data): Extension<UserData>,
     Query(query): Query<ListCharacterPagination>,
-    Json(request): Json<ListCharactersRequest>,
+
+    Path(project_id): Path<u64>,
 ) -> HandlerResult<impl IntoResponse, ListCharactersErrorResponse> {
     query.validate()?;
 
     // Проверка доступа к проекту
-    if !user_data.projects_list.contains(&request.project_id) {
+    if !user_data.projects_list.contains(&project_id) {
         return Err(ListCharactersError::AccessDenied.into());
     }
 
@@ -35,7 +36,7 @@ pub async fn list_characters_handler(
         query.page,
         query.per_page,
         query.search,
-        request.project_id,
+        project_id,
         &state.graph,
     )
     .await?;

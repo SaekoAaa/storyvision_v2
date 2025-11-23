@@ -1,6 +1,10 @@
+use axum::middleware::from_fn_with_state;
 use entities_service::features::common::AppState;
 
-use crate::infrastructure::{init_neo4::init_neo4j, test_user_data::insert_test_user_data};
+use crate::infrastructure::{
+    init_neo4::init_neo4j, mw_validate_jwt::mw_validate_access_token,
+    test_user_data::insert_test_user_data,
+};
 
 use {
     crate::infrastructure::{load_env::Environment, router::init_router, shutdown::shutdown_task},
@@ -31,14 +35,16 @@ async fn main() {
         .expect("Failed to connect to Neo4j");
 
     tracing::debug!("Connected to Neo4j");
-    let auth_state = Arc::new(AppState {
+    let state = Arc::new(AppState {
         graph: Arc::new(graph),
         token_secret: "secret".to_string(),
     });
-    let mut router = init_router(auth_state.clone());
+    let mut router = init_router(state.clone());
     if env.test_user_data {
         tracing::warn!("Using test user data");
         router = insert_test_user_data(router);
+    } else {
+        router = router.layer(from_fn_with_state(state.clone(), mw_validate_access_token));
     }
     let handle = Handle::new();
     let ipv4 = Ipv4Addr::from_str(&env.app_address)

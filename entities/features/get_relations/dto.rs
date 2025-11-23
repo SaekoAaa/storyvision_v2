@@ -2,12 +2,6 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
-pub struct GetRelationsRequest {
-    #[validate(range(min = 1))]
-    pub project_id: u64,
-}
-
-#[derive(Debug, Deserialize, Validate)]
 pub struct GetRelationsPagination {
     #[validate(range(min = 1))]
     pub page: u32,

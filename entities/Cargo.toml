@@ -13,11 +13,12 @@ path = "./lib.rs"
 [dependencies]
 
 anyhow = "1.0.100"
-axum = { version = "0.8.4", features = ["http2", "macros", "tokio"] }
+axum = { version = "0.8.4", features = ["http2", "macros", "multipart", "tokio"] }
 axum-extra = { version = "0.10.2", features = ["cookie", "json-deserializer"] }
 axum-server = "0.7.2"
 axum-test = "18.1.0"
 dotenvy = "0.15.7"
+futures = "0.3.31"
 jsonwebtoken = "9.3.1"
 neo4rs = "0.8.0"
 serde = { version = "1.0.228", features = ["derive"] }

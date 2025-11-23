@@ -1,12 +1,12 @@
 use neo4rs::{Graph, query};
 
 use super::{
-    dto::{GetRelationsPagination, GetRelationsRequest, GetRelationsResponse, RelationItem},
+    dto::{GetRelationsPagination, GetRelationsResponse, RelationItem},
     error::GetRelationsError,
 };
 
 pub async fn get_relations_usecase(
-    req: GetRelationsRequest,
+    project_id: u64,
     pagination: GetRelationsPagination,
     graph: &Graph,
 ) -> Result<GetRelationsResponse, GetRelationsError> {
@@ -23,14 +23,14 @@ pub async fn get_relations_usecase(
                 OR r.relation_type CONTAINS $search
              RETURN count(r) as total",
         )
-        .param("project_id", req.project_id as i64)
+        .param("project_id", project_id as i64)
         .param("search", search.clone())
     } else {
         query(
             "MATCH (r:Relation {project_id: $project_id})
              RETURN count(r) as total",
         )
-        .param("project_id", req.project_id as i64)
+        .param("project_id", project_id as i64)
     };
 
     let mut count_result = graph.execute(count_query).await?;
@@ -56,7 +56,7 @@ pub async fn get_relations_usecase(
              SKIP $offset
              LIMIT $limit",
         )
-        .param("project_id", req.project_id as i64)
+        .param("project_id", project_id as i64)
         .param("search", search.clone())
         .param("offset", offset as i64)
         .param("limit", per_page as i64)
@@ -72,7 +72,7 @@ pub async fn get_relations_usecase(
              SKIP $offset
              LIMIT $limit",
         )
-        .param("project_id", req.project_id as i64)
+        .param("project_id", project_id as i64)
         .param("offset", offset as i64)
         .param("limit", per_page as i64)
     };

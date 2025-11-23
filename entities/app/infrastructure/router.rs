@@ -4,7 +4,9 @@ use entities_service::features::{
     create_connection::handler::create_connection_handler,
     create_event::handler::create_event_handler, create_relation::handler::create_relation_handler,
     get_connections::handler::get_connections_handler, get_events::handler::get_events_handler,
+    get_project_graph::handler::get_project_graph_handler,
     get_relations::handler::get_relations_handler,
+    import_project::handler::import_project_graph_multipart_handler,
     list_characters::handler::list_characters_handler,
 };
 use {
@@ -22,40 +24,45 @@ pub fn init_router(state: Arc<AppState>) -> Router {
         )
         .nest(
             ROUTER_VERSION_PATH,
-            Router::new()
-                .nest(
-                    "/characters",
-                    Router::new()
-                        .route(
+            Router::new().nest(
+                "/entities",
+                Router::new()
+                    .nest(
+                        "/{project_id}/characters",
+                        Router::new().route(
                             "/",
                             get(list_characters_handler).post(create_character_handler),
-                        )
-                        .with_state(state.clone()),
-                )
-                .nest(
-                    "/events",
-                    Router::new()
-                        .route("/", get(get_events_handler).post(create_event_handler))
-                        .with_state(state.clone()),
-                )
-                .nest(
-                    "/relations",
-                    Router::new().route(
-                        "/",
-                        get(get_relations_handler)
-                            .post(create_relation_handler)
-                            .with_state(state.clone()),
-                    ),
-                )
-                .nest(
-                    "/connections",
-                    Router::new().route(
-                        "/",
-                        get(get_connections_handler)
-                            .post(create_connection_handler)
-                            .with_state(state.clone()),
-                    ),
-                ),
+                        ),
+                    )
+                    .nest(
+                        "/{project_id}/events",
+                        Router::new()
+                            .route("/", get(get_events_handler).post(create_event_handler)),
+                    )
+                    .nest(
+                        "/{project_id}/relations",
+                        Router::new().route(
+                            "/",
+                            get(get_relations_handler).post(create_relation_handler),
+                        ),
+                    )
+                    .nest(
+                        "/{project_id}/connections",
+                        Router::new().route(
+                            "/",
+                            get(get_connections_handler).post(create_connection_handler),
+                        ),
+                    )
+                    .nest(
+                        "/{project_id}/graph",
+                        Router::new().route("/project", get(get_project_graph_handler)),
+                    )
+                    .route(
+                        "/{project_id}/import",
+                        post(import_project_graph_multipart_handler),
+                    )
+                    .with_state(state.clone()),
+            ),
         )
         .layer(
             CorsLayer::new()
