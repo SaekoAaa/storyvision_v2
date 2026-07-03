@@ -7,13 +7,11 @@ use auth_service::features::{
 };
 use auth_service::model::UserData;
 use auth_service::utils::jwt::{JWTClaims, validate_jwt_token};
-use axum::Json;
 use axum::extract::State;
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{IntoResponse, Response};
 use axum::{extract::Request, middleware::Next, routing::get};
 use jsonwebtoken::TokenData;
-use serde_json::json;
 
 use {
     auth_service::{

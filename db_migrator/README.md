@@ -7,7 +7,7 @@
 ## Нужна дополнительная работа над конфигом
 
 ## Типы миграций (MIGRATION_TYPE env):
-1 - ApplyMigration
-2 - RevertMigration
-3 - ApplyWithData
-4 - ApplyAndClearData
+1 - applies migration
+2 - reverts migration
+3 - applies and fills data
+4 - applies but clears data

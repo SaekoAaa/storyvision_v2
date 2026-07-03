@@ -12,15 +12,50 @@ Feature based architecture
 
 <img width="402" height="574" alt="image" src="https://github.com/user-attachments/assets/3fd03e28-d38f-4f8a-87a5-8b5c9a0407b7" />
 
-## Запуск
+## Запуск и разработка
 
+### Локальный запуск (через Cargo)
+Так как проект использует Cargo Workspace, вы можете собирать и запускать сервисы независимо:
 ```bash
-# Локальный запуск
-cargo run
+# Запуск конкретного сервиса (например, auth)
+cargo run -p auth_service
 
-# Запуск контейнера
-docker compose up -d --build
+# Сборка конкретного сервиса в release
+cargo build -p projects_service --release
 ```
+
+### Запуск через Docker Compose (Профили)
+Все сервисы и инфраструктура объединены в корневом `compose.yaml` с разделением по профилям:
+
+* **Только базы данных** (MySQL запускается по умолчанию):
+  ```bash
+  docker compose up -d
+  ```
+
+* **Применить миграции БД** (запустит MySQL, проверит здоровье, накатит миграции и выключит контейнер мигратора):
+  ```bash
+  docker compose --profile migration up
+  ```
+
+* **Запуск базового API стека** (Auth, Projects, Nginx Gateway, MySQL):
+  ```bash
+  docker compose --profile core --profile gateway up -d
+  ```
+
+* **Запуск графового стека** (Neo4j & Entities Service):
+  ```bash
+  docker compose --profile graph up -d
+  ```
+
+* **Запуск мониторинга** (Jaeger, Prometheus, OTel Collector):
+  ```bash
+  docker compose --profile monitoring up -d
+  ```
+
+* **Запустить вообще всё**:
+  ```bash
+  docker compose --profile all up -d
+  ```
 
 ## Архитектура
 ~~ В процессе ~~

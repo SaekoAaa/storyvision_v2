@@ -12,8 +12,8 @@ services:
       MYSQL_ADDRESS: "mysql"
       APP_ADDRESS: "0.0.0.0"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      DB_ADDRESS: "mysql2"
-      SALT: "asoidweiubcwecu"
+      DB_ADDRESS: "storyvision_mysql"
+      SALT: "${SALT}"
     depends_on:
       - mysql
     ports:
@@ -21,7 +21,7 @@ services:
 
   mysql:
     image: mysql:8.3
-    container_name: mysql2
+    container_name: storyvision_mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"

@@ -5,20 +5,18 @@ ARG APP_NAME=migrator_service
 
 
 FROM rust:${RUST_VERSION}-alpine AS build
-ARG APP_NAME
 WORKDIR /app
 
 # Install host build dependencies.
-RUN apk add --no-cache clang lld musl-dev git
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add clang lld musl-dev git
 
-RUN --mount=type=bind,source=app,target=app \
-    --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
-    --mount=type=bind,source=lib.rs,target=lib.rs \
+RUN --mount=type=bind,source=.,target=/app \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    cargo build --release && \
-    cp ./target/release/$APP_NAME /bin/server
+    cargo build --release -p migrator_service && \
+    cp ./target/release/migrator_service /bin/server
 
 FROM alpine:3.18 AS final
 

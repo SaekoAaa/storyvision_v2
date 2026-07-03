@@ -1,7 +1,38 @@
 services:
+  # --- Core Infrastructure ---
+  mysql:
+    container_name: storyvision_db
+    image: mysql:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 3
+
   neo4j:
     image: neo4j:5.15-community
     container_name: neo4j_graph
+    profiles: ["graph", "all", "entities"]
     ports:
       - "${NEO4J_HTTP_PORT:-7474}:7474"
       - "${NEO4J_BOLT_PORT:-7687}:7687"
@@ -18,9 +49,91 @@ services:
       - neo4j_import:/var/lib/neo4j/import
       - neo4j_plugins:/plugins
 
+  # --- Database Migrator ---
+  db_migrator:
+    build:
+      context: .
+      dockerfile: ./db_migrator/Dockerfile
+      target: final
+    container_name: migrator
+    pull_policy: never
+    profiles: ["migration", "all"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_PORT: 3306
+      MYSQL_ADDRESS: "mysql"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MIGRATIONS_PATH: /migrations
+      COLLECTOR_URL: "http://otel:4318/v1"
+      WITH_TRACING: "true"
+      WITH_METRICS: "true"
+    volumes:
+      - ./db_migrator/migrations:/migrations
+
+  # --- Microservices ---
+  auth_server:
+    build:
+      context: .
+      dockerfile: ./auth/Dockerfile
+      target: final
+    image: auth-service:2.0.3-a1c8cd7
+    container_name: auth_server
+    pull_policy: never
+    profiles: ["auth", "core", "gateway", "all"]
+    environment:
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_PORT: 3306
+      MYSQL_ADDRESS: "mysql"
+      APP_ADDRESS: "0.0.0.0"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      DB_ADDRESS: "mysql"
+      SALT: "12345salt"
+    depends_on:
+      - mysql
+    expose:
+      - "4000"
+    ports:
+      - "4000:4000"
+
+  projects_server:
+    build:
+      context: .
+      dockerfile: ./projects/Dockerfile
+      target: final
+    container_name: projects_server
+    image: projects-service:2.0.2-b914a43
+    pull_policy: never
+    profiles: ["projects", "core", "gateway", "all"]
+    environment:
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_PORT: 3306
+      MYSQL_ADDRESS: "mysql"
+      APP_ADDRESS: "0.0.0.0"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      DB_ADDRESS: "mysql"
+      SALT: "12345salt"
+    depends_on:
+      - mysql
+    expose:
+      - "4000"
+
   entity_server:
+    build:
+      context: .
+      dockerfile: ./entities/Dockerfile
+      target: final
     container_name: entity_server
     image: entities-service:1.1.1-a1c8cd7
+    pull_policy: never
+    profiles: ["entities", "graph", "all"]
     environment:
       APP_ADDRESS: "0.0.0.0"
       APP_PORT: 4000
@@ -33,75 +146,11 @@ services:
     expose:
       - "4000"
 
-  mysql:
-    container_name: storyvision_db
-    image: mysql:latest
-    restart: always
-    ports:
-      - "3306:3306"
-    env_file:
-      - .env
-    environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
-      MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      MYSQL_USER: "${MYSQL_USER}"
-      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-p${MYSQL_ROOT_PASSWORD}",
-        ]
-      interval: 3s
-      timeout: 3s
-      retries: 3
-
-  auth_server:
-    build:
-      context: .
-      target: final
-    image: auth-service:2.0.3-a1c8cd7
-    container_name: auth_server
-    environment:
-      MYSQL_USER: "${MYSQL_USER}"
-      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
-      MYSQL_PORT: 3306
-      MYSQL_ADDRESS: "mysql"
-      APP_ADDRESS: "0.0.0.0"
-      MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      DB_ADDRESS: "mysql"
-      SALT: "12345salt"
-    depends_on:
-      - mysql
-    expose:
-      - "4000"
-
-  projects_server:
-    container_name: projects_server
-    image: projects-service:2.0.2-b914a43
-    environment:
-      MYSQL_USER: "${MYSQL_USER}"
-      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
-      MYSQL_PORT: 3306
-      MYSQL_ADDRESS: "mysql"
-      APP_ADDRESS: "0.0.0.0"
-      MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      DB_ADDRESS: "mysql"
-      SALT: "12345salt"
-    depends_on:
-      - mysql
-    expose:
-      - "4000"
-
+  # --- Routing & Gateway ---
   nginx:
     image: nginx:latest
     container_name: gateway
+    profiles: ["gateway", "all"]
     ports:
       - "8081:80"
     volumes:
@@ -110,7 +159,43 @@ services:
       - auth_server
       - projects_server
 
+  # --- Observability ---
+  otel-collector:
+    container_name: otel
+    image: otel/opentelemetry-collector-contrib
+    profiles: ["monitoring", "all"]
+    command: --config=/etc/otelcol/config.yaml
+    ports:
+      - "4318:4318" # HTTP
+    volumes:
+      - ./db_migrator/config/otel_collector.yaml:/etc/otelcol/config.yaml:ro
+
+  jaeger:
+    image: jaegertracing/jaeger:latest
+    container_name: jaeger
+    profiles: ["monitoring", "all"]
+    ports:
+      - "16686:16686" # Web UI http://localhost:16686
+      - "14268:14268"
+    expose:
+      - "14268"
+      - "4317"
+      - "4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      LOG_LEVEL: debug
+
+  prom:
+    image: prom/prometheus
+    profiles: ["monitoring", "all"]
+    ports:
+      - "9099:9090"
+    command: --config.file=/etc/prometheus/prometheus.yaml
+    volumes:
+      - ./db_migrator/config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+
 volumes:
+  mysql_data:
   neo4j_data:
   neo4j_logs:
   neo4j_import:
