@@ -1,18 +1,16 @@
 use std::sync::Arc;
 
 use axum::{
-    Json,
     extract::{Request, State},
     http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},
+    Json,
 };
 use jsonwebtoken::TokenData;
-use projects_service::{
-    features::common::{ProjectState, UserData},
-    utils::jwt::{JWTClaims, validate_jwt_token},
-};
+use projects_service::features::common::{ProjectState, UserData};
 use serde_json::json;
+use projects_service::features::crypto::jwt::{validate_jwt_token, JWTClaims};
 
 pub async fn mw_validate_access_token(
     State(app_state): State<Arc<ProjectState>>,

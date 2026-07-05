@@ -1,13 +1,9 @@
-use crate::infrastructure::{
-    mw_validate_jwt::{self, mw_validate_access_token},
-    test_user_data::insert_test_user_data,
-};
-use axum::middleware::{from_fn, from_fn_with_state};
+use test_user_data::insert_test_user_data;
+use axum::middleware::{from_fn_with_state};
 use projects_service::features::common::ProjectState;
 use sqlx::MySqlPool;
 
 use {
-    crate::infrastructure::{load_env::Environment, router::init_router, shutdown::shutdown_task},
     axum_server::Handle,
     std::{
         net::{Ipv4Addr, SocketAddr},
@@ -17,8 +13,17 @@ use {
     tokio::select,
     tracing::level_filters::LevelFilter,
 };
+use config::Environment;
+use mw_validate_jwt::{mw_validate_access_token};
+use router::init_router;
+use shutdown::shutdown_task;
 
-mod infrastructure;
+pub mod config;
+pub mod mw_validate_jwt;
+pub mod router;
+pub mod shutdown;
+pub mod test_user_data;
+
 #[tokio::main]
 async fn main() {
     if let Err(e) = dotenvy::from_filename("../.env") {

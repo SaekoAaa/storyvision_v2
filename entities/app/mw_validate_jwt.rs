@@ -1,18 +1,19 @@
-use entities_service::{features::common::UserData, utils::jwt::validate_jwt_token};
+use entities_service::features::common::UserData;
 
 use std::sync::Arc;
 
 use axum::{
-    Json,
     extract::{Request, State},
     http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},
+    Json,
 };
-use entities_service::{features::common::AppState, utils::jwt::JWTClaims};
+use entities_service::features::common::AppState;
 use jsonwebtoken::TokenData;
 
 use serde_json::json;
+use entities_service::features::crypto::jwt::{validate_jwt_token, JWTClaims};
 
 pub async fn mw_validate_access_token(
     State(app_state): State<Arc<AppState>>,

@@ -7,3 +7,4 @@ pub mod list_project_members;
 pub mod list_projects;
 pub mod remove_project_member;
 pub mod update_project_metadata;
+pub mod crypto;

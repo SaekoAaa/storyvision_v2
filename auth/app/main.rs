@@ -1,11 +1,8 @@
 use {
-    crate::infrastructure::{
-        load_env::Environment, openapi::init_openapi, router::init_router, shutdown::shutdown_task,
-    },
-    argon2::password_hash::{SaltString, rand_core::OsRng},
-    auth_service::{db::init_database, features::common::AuthState},
+    argon2::password_hash::SaltString,
+    auth_service::features::common::AuthState,
     axum_server::Handle,
-    base64::{Engine, engine::general_purpose},
+    base64::{engine::general_purpose, Engine},
     std::{
         net::{Ipv4Addr, SocketAddr},
         str::FromStr,
@@ -13,9 +10,21 @@ use {
     },
     tokio::select,
     tracing::level_filters::LevelFilter,
-    uuid::Uuid,
 };
-mod infrastructure;
+use database::init_database;
+use config::Environment;
+use openapi::init_openapi;
+use router::init_router;
+use shutdown::shutdown_task;
+
+pub mod database;
+pub mod config;
+pub mod mw_validate_jwt;
+pub mod openapi;
+pub mod router;
+pub mod shutdown;
+pub mod observability;
+
 #[tokio::main]
 async fn main() {
     if let Err(e) = dotenvy::from_filename("../.env") {

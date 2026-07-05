@@ -21,7 +21,7 @@ pub fn init_router(state: Arc<ProjectState>) -> Router {
     Router::new()
         .route(
             "/healthcheck",
-            axum::routing::get(async move || StatusCode::OK),
+            get(async move || StatusCode::OK),
         )
         .nest(
             ROUTER_VERSION_PATH,

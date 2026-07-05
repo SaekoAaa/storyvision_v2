@@ -1,5 +1,10 @@
 use std::sync::Arc;
 
+use auth_service::{
+    features::common::AuthState,
+    model::UserData,
+    features::crypto::jwt::{JWTClaims, validate_jwt_token},
+};
 use axum::{
     Json,
     extract::{Request, State},
@@ -7,15 +12,11 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Response},
 };
-use entities_service::{
-    features::common::{AppState, UserData},
-    utils::jwt::{JWTClaims, validate_jwt_token},
-};
 use jsonwebtoken::TokenData;
 use serde_json::json;
 
 pub async fn mw_validate_access_token(
-    State(app_state): State<Arc<AppState>>,
+    State(app_state): State<Arc<AuthState>>,
     mut request: Request,
     next: Next,
 ) -> Response {
@@ -47,7 +48,6 @@ pub async fn mw_validate_access_token(
     let user_data = UserData {
         id: claims.sub,
         role: claims.role,
-        projects_list: claims.projects,
     };
 
     request.extensions_mut().insert(user_data);

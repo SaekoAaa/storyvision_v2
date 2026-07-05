@@ -73,6 +73,7 @@ services:
       MYSQL_ADDRESS: "mysql"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MIGRATIONS_PATH: /migrations
+      MIGRATION_TYPE: "${MIGRATION_TYPE:-1}"
       COLLECTOR_URL: "http://otel:4318/v1"
       WITH_TRACING: "true"
       WITH_METRICS: "true"

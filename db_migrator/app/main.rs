@@ -1,16 +1,17 @@
 use {
-    crate::{
-        infrastructure::app,
-        observability::{metrics::init_metrics, otel::OtelGuard, tracing::init_traces},
-    },
+    crate::observability::{metrics::init_metrics, otel::OtelGuard, tracing::init_traces},
     dotenvy::var,
     opentelemetry::trace::TracerProvider as _,
     tracing::{info_span, level_filters::LevelFilter},
     tracing_opentelemetry::OpenTelemetryLayer,
-    tracing_subscriber::{Layer, layer::SubscriberExt, util::SubscriberInitExt},
+    tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer},
 };
-mod infrastructure;
 mod observability;
+pub mod app;
+pub mod apply_tx;
+pub mod database;
+pub mod load_env;
+
 fn main() {
     let level = tracing_subscriber::fmt::layer().with_filter(LevelFilter::INFO);
     let mut subscriber = tracing_subscriber::registry().with(level);

@@ -9,3 +9,4 @@ pub mod get_project_graph;
 pub mod get_relations;
 pub mod import_project;
 pub mod list_characters;
+pub mod crypto;

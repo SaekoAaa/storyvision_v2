@@ -1,11 +1,11 @@
 version: "3"
 tasks:
-  docker_build_migrator:
-    aliases:
-      - db_migrator
-    cmds:
-      - docker build -f db_migrator/Dockerfile -t db_migrator .
-    desc: Build the Docker image for the database migrator service.
+  # docker_build_migrator:
+  #   aliases:
+  #     - db_migrator
+  #   cmds:
+  #     - docker build -f db_migrator/Dockerfile -t db_migrator .
+  #   desc: Build the Docker image for the database migrator service.
   run_auth:
     aliases:
       - au
@@ -13,25 +13,45 @@ tasks:
       - cargo r --bin auth_service
     desc: Run the auth service.
   apply_migration:
-    dir: ./db_migrator
     aliases:
       - am
-    preconditions:
-      - test -d ./migrations
-    env:
-      MIGRATIONS_PATH: "./migrations"
     cmds:
-      - cargo run --bin migrator_service
-    desc: Apply database migrations
+      - MIGRATION_TYPE=1 docker compose --profile migration up
+    desc: Apply database migrations via Docker Compose
+
   revert_migration:
-    dir: ./db_migrator
     aliases:
       - rm
-    preconditions:
-      - test -d ./migrations
-    env:
-      MIGRATIONS_PATH: "./migrations"
-      IS_REVERT: "true"
     cmds:
-      - cargo run --bin migrator_service
-    desc: Revert database migrations
+      - MIGRATION_TYPE=2 docker compose --profile migration up
+    desc: Revert database migrations via Docker Compose
+
+  start_core:
+    aliases:
+      - core
+    cmds:
+      - docker compose --profile core up -d
+    desc: Start Docker Compose with core components (MySQL, Auth, Projects)
+
+  start_migration:
+    aliases:
+      - migrate
+    vars:
+      MIGRATION_TYPE: '{{default "1" .CLI_ARGS}}'
+    cmds:
+      - MIGRATION_TYPE={{.MIGRATION_TYPE}} docker compose --profile migration up
+    desc: Run database migrations via Docker Compose. Pass type as arg (e.g. task migrate -- 3)
+
+  start_nginx:
+    aliases:
+      - nginx
+    cmds:
+      - docker compose --profile gateway up -d
+    desc: Start Nginx gateway
+
+  start_observability:
+    aliases:
+      - monitoring
+    cmds:
+      - docker compose --profile monitoring up -d
+    desc: Start observability tools (OTel, Jaeger, Prometheus)

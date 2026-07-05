@@ -3,7 +3,7 @@ use {
         constants,
         features::me::error::GetUserError,
         model::*,
-        utils::{hash::hash_password, jwt::create_jwt_token},
+        features::crypto::{hash::hash_password, jwt::create_jwt_token},
     },
     argon2::password_hash::SaltString,
     sha2::{Digest, Sha256},

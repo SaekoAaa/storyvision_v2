@@ -1,8 +1,8 @@
 use crate::constants::{ACCESS_EXPIRY_SECONDS, REFRESH_EXPIRY_DAYS};
 use crate::features::login_user::error::LoginError;
 use crate::model::{ProjectId, UserId};
-use crate::utils::hash::hash_password;
-use crate::utils::jwt::create_jwt_token;
+use crate::features::crypto::hash::hash_password;
+use crate::features::crypto::jwt::create_jwt_token;
 use argon2::password_hash::SaltString;
 use sha2::{Digest, Sha256};
 use sqlx::MySqlPool;

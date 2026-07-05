@@ -35,3 +35,7 @@ utoipa = { workspace = true }
 utoipa-rapidoc = { workspace = true }
 uuid = { workspace = true }
 validator = { workspace = true }
+opentelemetry = { workspace = true }
+opentelemetry_sdk = { workspace = true }
+opentelemetry-otlp = { workspace = true }
+tracing-opentelemetry = { workspace = true }

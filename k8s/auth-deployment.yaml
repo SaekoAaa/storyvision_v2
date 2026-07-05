@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: auth:latest
+          image: auth-service:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 4000
@@ -24,11 +24,6 @@ spec:
                 secretKeyRef:
                   name: mysql-secret
                   key: MYSQL_DATABASE
-            - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-secret
-                  key: MYSQL_PASSWORD
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
@@ -45,8 +40,6 @@ spec:
               value: "mysql-service"
             - name: APP_ADDRESS
               value: "0.0.0.0"
-            - name: MIGRATIONS_PATH
-              value: "./db_migrator/migrations"
 ---
 apiVersion: v1
 kind: Service

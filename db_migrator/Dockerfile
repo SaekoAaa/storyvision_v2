@@ -7,7 +7,6 @@ ARG APP_NAME=migrator_service
 FROM rust:${RUST_VERSION}-alpine AS build
 WORKDIR /app
 
-# Install host build dependencies.
 RUN --mount=type=cache,target=/var/cache/apk \
     apk add clang lld musl-dev git
 
@@ -20,7 +19,6 @@ RUN --mount=type=bind,source=.,target=/app \
 
 FROM alpine:3.18 AS final
 
-# Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001
 RUN adduser \
@@ -33,13 +31,7 @@ RUN adduser \
     appuser
 USER appuser
 
-# Copy the executable from the "build" stage.
 COPY --from=build /bin/server /bin/
-# COPY config/docker_config.yaml /app/config.yaml
-# COPY fixtures /fixtures
-# ENV MIGRATIONS_PATH=./migrations
-# Expose the port that the application listens on.
-EXPOSE 1000
+COPY db_migrator/migrations /migrations
 
-# What the container should run when it is started.
 CMD ["/bin/server"]

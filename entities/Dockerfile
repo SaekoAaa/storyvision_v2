@@ -1,6 +1,4 @@
 
-
-
 ARG RUST_VERSION=1.86.0
 ARG APP_NAME=entities_service
 
@@ -8,7 +6,6 @@ ARG APP_NAME=entities_service
 FROM rust:${RUST_VERSION}-alpine AS build
 WORKDIR /app
 
-# Install host build dependencies.
 RUN --mount=type=cache,target=/var/cache/apk \
     apk add clang lld musl-dev git
 
@@ -32,9 +29,7 @@ RUN adduser \
     appuser
 USER appuser
 
-# Copy the executable from the "build" stage.
 COPY --from=build /bin/server /bin/
 EXPOSE 4000
 
-# What the container should run when it is started.
 CMD ["/bin/server"]

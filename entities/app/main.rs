@@ -1,13 +1,9 @@
 use axum::middleware::from_fn_with_state;
 use entities_service::features::common::AppState;
 
-use crate::infrastructure::{
-    init_neo4::init_neo4j, mw_validate_jwt::mw_validate_access_token,
-    test_user_data::insert_test_user_data,
-};
+use test_user_data::insert_test_user_data;
 
 use {
-    crate::infrastructure::{load_env::Environment, router::init_router, shutdown::shutdown_task},
     axum_server::Handle,
     std::{
         net::{Ipv4Addr, SocketAddr},
@@ -17,8 +13,19 @@ use {
     tokio::select,
     tracing::level_filters::LevelFilter,
 };
+use config::Environment;
+use mw_validate_jwt::mw_validate_access_token;
+use neo4j::init_neo4j;
+use router::init_router;
+use shutdown::shutdown_task;
 
-mod infrastructure;
+pub mod config;
+pub mod mw_validate_jwt;
+pub mod neo4j;
+pub mod router;
+pub mod shutdown;
+pub mod test_user_data;
+
 #[tokio::main]
 async fn main() {
     if let Err(e) = dotenvy::from_filename("../.env") {

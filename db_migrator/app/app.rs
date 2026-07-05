@@ -4,14 +4,10 @@ use mysql::{Opts, Pool};
 use opentelemetry::KeyValue;
 use tracing::debug_span;
 
-use crate::{
-    infrastructure::{
-        apply_tx::{apply_separately, apply_transaction},
-        database::connect_to_database,
-        load_env::{Enviroment, MigrationType},
-    },
-    observability::metrics::{MIGRATIONS_COUNTER, MIGRATIONS_DURATION},
-};
+use crate::observability::metrics::{MIGRATIONS_COUNTER, MIGRATIONS_DURATION};
+use crate::apply_tx::{apply_separately, apply_transaction};
+use crate::database::connect_to_database;
+use crate::load_env::{Enviroment, MigrationType};
 
 #[tracing::instrument(name = "load_env", level = "info")]
 pub fn run() -> anyhow::Result<()> {

@@ -35,7 +35,6 @@ use {auth_service::features::common::AuthState, std::sync::Arc};
 #[cfg(unix)]
 use {auth_service::features::common::AuthState, std::sync::Arc};
 #[cfg(unix)]
-
 pub async fn shutdown_task(
     handle: Handle,
     state: Arc<AuthState>,

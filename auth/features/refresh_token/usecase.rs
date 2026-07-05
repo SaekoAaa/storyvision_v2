@@ -1,5 +1,5 @@
 use crate::model::{ProjectId, User, UserId};
-use crate::utils::jwt::create_jwt_token;
+use crate::features::crypto::jwt::create_jwt_token;
 use crate::{constants::ACCESS_EXPIRY_SECONDS, features::refresh_token::error::RefreshTokenError};
 use sha2::{Digest, Sha256};
 use sqlx::MySqlPool;

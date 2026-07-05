@@ -1,24 +1,19 @@
-use crate::infrastructure::mw_validate_jwt::mw_validate_access_token;
+use crate::mw_validate_jwt::mw_validate_access_token;
 use auth_service::features::login_user::handler::handler_login_user;
 use auth_service::features::logout_user::handler::handler_logout_user;
 use auth_service::features::refresh_token::handler::handler_refresh_token;
 use auth_service::features::{
     check_db_health::handler::db_healtcheck_handler, me::handler::handler_get_user,
 };
-use auth_service::model::UserData;
-use auth_service::utils::jwt::{JWTClaims, validate_jwt_token};
-use axum::extract::State;
-use axum::middleware::{from_fn, from_fn_with_state};
-use axum::response::{IntoResponse, Response};
-use axum::{extract::Request, middleware::Next, routing::get};
-use jsonwebtoken::TokenData;
+use axum::middleware::from_fn_with_state;
+use axum::routing::get;
 
 use {
     auth_service::{
         constants::ROUTER_VERSION_PATH,
         features::{common::AuthState, register_user::handler::handler_register_user},
     },
-    axum::{Router, http::StatusCode, routing::post},
+    axum::{http::StatusCode, routing::post, Router},
     std::sync::Arc,
     tower_http::{cors::CorsLayer, trace::TraceLayer},
 };
@@ -27,7 +22,7 @@ pub fn init_router(auth_state: Arc<AuthState>) -> Router {
     Router::new()
         .route(
             "/healthcheck",
-            axum::routing::get(async move || StatusCode::OK),
+            get(async move || StatusCode::OK),
         )
         .route(
             "/db_healthcheck",

@@ -57,6 +57,31 @@ cargo build -p projects_service --release
   docker compose --profile all up -d
   ```
 
+### Быстрый запуск через Taskfile (Рекомендуется)
+Если у вас установлен `task` (Go Task), вы можете использовать более короткие команды:
+
+* **Запуск ядра** (MySQL, Auth, Projects):
+  ```bash
+  task core
+  ```
+
+* **Запуск миграций** (по умолчанию `MIGRATION_TYPE=1`):
+  ```bash
+  task migrate
+  # Или с указанием типа миграции (например, 3 — с фикстурами данных)
+  task migrate -- 3
+  ```
+
+* **Запуск Nginx Gateway**:
+  ```bash
+  task nginx
+  ```
+
+* **Запуск мониторинга** (Prometheus, Jaeger, OTel):
+  ```bash
+  task monitoring
+  ```
+
 ## Архитектура
 ~~ В процессе ~~
 

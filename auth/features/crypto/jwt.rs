@@ -45,8 +45,7 @@ pub fn validate_jwt_token(
 #[cfg(test)]
 pub mod test {
     use time::Duration;
-
-    use crate::utils::jwt::{create_jwt_token, validate_jwt_token};
+    use crate::features::crypto::jwt::{create_jwt_token, validate_jwt_token};
 
     #[test]
     fn test_validate_jwt() -> anyhow::Result<()> {
