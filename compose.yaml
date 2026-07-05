@@ -48,7 +48,12 @@ services:
       - neo4j_logs:/logs
       - neo4j_import:/var/lib/neo4j/import
       - neo4j_plugins:/plugins
-
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s 
   # --- Database Migrator ---
   db_migrator:
     build:
@@ -95,7 +100,8 @@ services:
       DB_ADDRESS: "mysql"
       SALT: "12345salt"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     expose:
       - "4000"
     ports:
@@ -121,9 +127,11 @@ services:
       DB_ADDRESS: "mysql"
       SALT: "12345salt"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     expose:
       - "4000"
+
 
   entity_server:
     build:
@@ -142,7 +150,10 @@ services:
       NEO4J_USER: ${NEO4J_USER}
       SALT: "12345salt"
     depends_on:
-      - neo4j
+      neo4j:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
     expose:
       - "4000"
 
@@ -156,8 +167,10 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - auth_server
-      - projects_server
+      auth_server:
+        condition: service_started
+      projects_server:
+        condition: service_started
 
   # --- Observability ---
   otel-collector:
