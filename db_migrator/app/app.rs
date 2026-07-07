@@ -1,17 +1,16 @@
 use std::{fs::read_to_string, path::Path};
 
-use mysql::{Opts, Pool};
 use opentelemetry::KeyValue;
 use tracing::debug_span;
 
 use crate::observability::metrics::{MIGRATIONS_COUNTER, MIGRATIONS_DURATION};
 use crate::apply_tx::{apply_separately, apply_transaction};
 use crate::database::connect_to_database;
-use crate::load_env::{Enviroment, MigrationType};
+use crate::config::{Environment, MigrationType};
 
 #[tracing::instrument(name = "load_env", level = "info")]
 pub fn run() -> anyhow::Result<()> {
-    let env = Enviroment::load_env().inspect_err(|e| {
+    let env = Environment::load_env().inspect_err(|e| {
         tracing::error!(error = %e, "Failed to load environment");
     })?;
     let mysql_connection_string = format!(
@@ -109,6 +108,26 @@ pub fn run() -> anyhow::Result<()> {
                     .unwrap();
                 apply_transaction(&pool, &fill_data_sql).unwrap();
             });
+        }
+        MigrationType::DryRun => {
+            tracing::info!("Dry-run mode: Verifying database connection and migrations directory");
+            
+            let path = Path::new(&env.migrations_path);
+            if !path.exists() {
+                return Err(anyhow::anyhow!("Migrations directory not found at: {}", env.migrations_path));
+            }
+            
+            let files = ["mysql_up.sql", "mysql_down.sql", "mysql_fill_data.sql", "mysql_drop_data.sql"];
+            for file in files {
+                let file_path = path.join(file);
+                if file_path.exists() {
+                    tracing::info!("Found migration file: {}", file);
+                } else {
+                    tracing::warn!("Optional migration file not found: {}", file);
+                }
+            }
+            
+            tracing::info!("Dry-run check passed successfully!");
         }
     };
 

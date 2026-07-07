@@ -36,7 +36,7 @@ spec:
                   key: MYSQL_PASSWORD
             - name: APP_PORT
               value: "4000"
-            - name: DB_ADDRESS
+            - name: MYSQL_ADDRESS
               value: "mysql-service"
             - name: APP_ADDRESS
               value: "0.0.0.0"

@@ -98,15 +98,12 @@ services:
       MYSQL_ADDRESS: "mysql"
       APP_ADDRESS: "0.0.0.0"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      DB_ADDRESS: "mysql"
       SALT: "12345salt"
     depends_on:
       mysql:
         condition: service_healthy
     expose:
       - "4000"
-    ports:
-      - "4000:4000"
 
   projects_server:
     build:
@@ -125,7 +122,6 @@ services:
       MYSQL_ADDRESS: "mysql"
       APP_ADDRESS: "0.0.0.0"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      DB_ADDRESS: "mysql"
       SALT: "12345salt"
     depends_on:
       mysql:

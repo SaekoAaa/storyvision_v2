@@ -12,7 +12,7 @@ services:
       MYSQL_ADDRESS: "mysql"
       APP_ADDRESS: "0.0.0.0"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      DB_ADDRESS: "storyvision_mysql"
+      MYSQL_ADDRESS: "storyvision_mysql"
       SALT: "${SALT}"
     depends_on:
       - mysql

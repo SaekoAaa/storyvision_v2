@@ -10,11 +10,11 @@ RUN --mount=type=cache,target=/var/cache/apk \
     apk add clang lld musl-dev git
 
 RUN --mount=type=bind,source=.,target=/app \
-    --mount=type=cache,target=/app/target/ \
+    --mount=type=cache,target=/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
-    cargo build --release -p entities_service && \
-    cp ./target/release/entities_service /bin/server
+    cargo build --release --target-dir /target -p entities_service && \
+    cp /target/release/entities_service /bin/server
 
 FROM alpine:3.18 AS final
 

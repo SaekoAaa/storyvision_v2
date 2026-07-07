@@ -18,7 +18,7 @@ impl Environment {
             mysql_port: var("MYSQL_PORT").unwrap_or(String::from("3306")),
             mysql_user: var("MYSQL_USER").context("MYSQL_USER")?,
             mysql_password: var("MYSQL_PASSWORD").context("MYSQL_PASSWORD")?,
-            db_address: var("DB_ADDRESS").unwrap_or(String::from("127.0.0.1")),
+            db_address: var("MYSQL_ADDRESS").unwrap_or(String::from("127.0.0.1")),
             app_address: var("APP_ADDRESS").context("APP_ADDRESS")?,
             salt: var("SALT")
                 .context("SALT")

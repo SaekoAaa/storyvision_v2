@@ -10,3 +10,4 @@
 2 - reverts migration
 3 - applies and fills data
 4 - applies but clears data
+5 - dry-run (checks DB connection and migrations directory without running migrations)
