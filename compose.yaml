@@ -2,7 +2,7 @@ services:
   # --- Core Infrastructure ---
   mysql:
     container_name: storyvision_db
-    image: mysql:latest
+    image: mysql:9.6.0
     restart: always
     ports:
       - "3306:3306"
@@ -99,6 +99,9 @@ services:
       APP_ADDRESS: "0.0.0.0"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       SALT: "12345salt"
+      WITH_METRICS: "true"
+      COLLECTOR_URL: "http://otel:4318/v1"
+      SECURE_COOKIES: "false"
     depends_on:
       mysql:
         condition: service_healthy
@@ -156,7 +159,7 @@ services:
 
   # --- Routing & Gateway ---
   nginx:
-    image: nginx:latest
+    image: nginx:1.31.2
     container_name: gateway
     profiles: ["gateway", "all"]
     ports:
@@ -172,7 +175,7 @@ services:
   # --- Observability ---
   otel-collector:
     container_name: otel
-    image: otel/opentelemetry-collector-contrib
+    image: otel/opentelemetry-collector-contrib:0.155.0
     profiles: ["monitoring", "all"]
     command: --config=/etc/otelcol/config.yaml
     ports:
@@ -181,7 +184,7 @@ services:
       - ./db_migrator/config/otel_collector.yaml:/etc/otelcol/config.yaml:ro
 
   jaeger:
-    image: jaegertracing/jaeger:latest
+    image: jaegertracing/jaeger:2.19.0
     container_name: jaeger
     profiles: ["monitoring", "all"]
     ports:
@@ -196,7 +199,7 @@ services:
       LOG_LEVEL: debug
 
   prom:
-    image: prom/prometheus
+    image: prom/prometheus:v3.13.0
     profiles: ["monitoring", "all"]
     ports:
       - "9099:9090"
@@ -204,9 +207,23 @@ services:
     volumes:
       - ./db_migrator/config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
 
+  grafana:
+    image: grafana/grafana:13.1
+    container_name: grafana
+    profiles: ["monitoring", "all"]
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prom
+    volumes:
+      - grafana_data:/var/lib/grafana
+
 volumes:
   mysql_data:
   neo4j_data:
   neo4j_logs:
   neo4j_import:
   neo4j_plugins:
+  grafana_data:

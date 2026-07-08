@@ -35,6 +35,18 @@ async fn main() {
         .with_max_level(LevelFilter::DEBUG)
         .init();
 
+    let metrics_provider = if env.with_metrics && env.collector_url.is_some() {
+        let collector_url = env.collector_url.as_ref().unwrap();
+        observability::metrics::init_metrics(&format!("{}/metrics", collector_url)).ok()
+    } else {
+        None
+    };
+
+    let _otel_guard = observability::otel::OtelGuard {
+        tracer_provider: None,
+        meter_provider: metrics_provider,
+    };
+
     let mysql_connection_string = format!(
         "mysql://{}:{}@{}:{}/{}?charset=utf8mb4",
         env.mysql_user, env.mysql_password, env.db_address, env.mysql_port, env.mysql_database
@@ -51,6 +63,7 @@ async fn main() {
         pool: db_ptr.clone(),
         token_secret: "secret".to_string(),
         saltstring: SaltString::from_b64(&encoded_salt).expect("Should generate salt"),
+        secure_cookies: env.secure_cookies,
     });
     let router = init_openapi(init_router(auth_state.clone()));
     let handle = Handle::new();

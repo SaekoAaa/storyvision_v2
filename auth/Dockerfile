@@ -1,6 +1,6 @@
 
 
-ARG RUST_VERSION=1.86.0
+ARG RUST_VERSION=1.94
 ARG APP_NAME=auth_service
 
 

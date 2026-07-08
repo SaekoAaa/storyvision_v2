@@ -86,7 +86,7 @@ pub async fn handler_register_user(
     let token_jar = jar.add(
         Cookie::build(("refresh", register_data.refresh_token.to_string()))
             .http_only(true)
-            .secure(true)
+            .secure(app_state.secure_cookies)
             .same_site(axum_extra::extract::cookie::SameSite::Lax)
             .path(REFRESH_TOKEN_ACCESS_PATH)
             .max_age(Duration::days(15))

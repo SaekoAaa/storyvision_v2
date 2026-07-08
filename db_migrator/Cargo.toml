@@ -16,7 +16,7 @@ dotenvy = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["json"] }
 mysql = "26.0.1"
 serde_yaml = "0.9.34"
 opentelemetry = { workspace = true }

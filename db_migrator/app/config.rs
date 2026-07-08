@@ -35,6 +35,7 @@ pub struct Environment {
     pub collector_url: Option<String>,
     pub with_tracing: bool,
     pub with_metrics: bool,
+    pub json_logs: bool,
 }
 
 fn read_env(key: &str) -> anyhow::Result<String> {
@@ -80,6 +81,7 @@ impl Environment {
         let collector_url = var("COLLECTOR_URL").ok();
         let with_tracing = var("WITH_TRACING").map_or(false, |t| t == "true");
         let with_metrics = var("WITH_METRICS").map_or(false, |t| t == "true");
+        let json_logs = var("JSON_LOGS").map_or(false, |t| t == "true");
 
         Ok(Self {
             database,
@@ -92,6 +94,7 @@ impl Environment {
             collector_url,
             with_tracing,
             with_metrics,
+            json_logs,
         })
     }
 }

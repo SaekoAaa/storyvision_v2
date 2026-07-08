@@ -46,7 +46,7 @@ pub async fn handler_logout_user(
     let new_jar = jar.add(
         Cookie::build(("refresh", ""))
             .http_only(true)
-            .secure(true)
+            .secure(app_state.secure_cookies)
             .same_site(axum_extra::extract::cookie::SameSite::Lax)
             .path(REFRESH_TOKEN_ACCESS_PATH)
             .max_age(Duration::ZERO)

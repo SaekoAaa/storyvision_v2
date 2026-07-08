@@ -10,6 +10,9 @@ pub struct Environment {
     pub app_port: u16,
     pub app_address: String,
     pub salt: String,
+    pub collector_url: Option<String>,
+    pub with_metrics: bool,
+    pub secure_cookies: bool,
 }
 impl Environment {
     pub fn load_env() -> anyhow::Result<Self> {
@@ -25,8 +28,12 @@ impl Environment {
                 .unwrap_or("12345salt".to_string()),
             app_port: var("APP_PORT")
                 .unwrap_or(String::from("4000"))
-                .parse()
-                .unwrap(),
+                .parse()?,
+            collector_url: var("COLLECTOR_URL").ok(),
+            with_metrics: var("WITH_METRICS").map_or(false, |t| t == "true"),
+            secure_cookies: var("SECURE_COOKIES")
+                .map(|v| v == "true")
+                .unwrap_or_else(|_| !cfg!(debug_assertions)),
         })
     }
 }

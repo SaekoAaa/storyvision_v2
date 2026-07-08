@@ -55,4 +55,5 @@ pub fn init_router(auth_state: Arc<AuthState>) -> Router {
                 .allow_methods(tower_http::cors::Any),
         )
         .layer(TraceLayer::new_for_http())
+        .layer(axum::middleware::from_fn(crate::observability::metrics::http_metrics_middleware))
 }

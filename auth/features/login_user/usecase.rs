@@ -38,10 +38,10 @@ pub async fn login_user_usecase(
     .await?
     {
         None => {
-            return Err(LoginError::NotFound {
+            Err(LoginError::NotFound {
                 user_response: "User not found".to_string(),
                 details: format!("Failed to find email: {}", &email),
-            });
+            })
         }
         Some(UserId { id }) => {
             let refresh_token = uuid::Uuid::new_v4().to_string();

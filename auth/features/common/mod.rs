@@ -9,4 +9,5 @@ pub struct AuthState {
     pub pool: Arc<sqlx::MySqlPool>,
     pub token_secret: String,
     pub saltstring: SaltString,
+    pub secure_cookies: bool,
 }

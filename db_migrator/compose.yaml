@@ -25,7 +25,7 @@ services:
     #   - db_password
   mysql:
     container_name: mysql
-    image: mysql:latest
+    image: mysql:9.6.0
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       MYSQL_DATABASE: "app_db"
@@ -47,7 +47,7 @@ services:
       start_period: 3s
   otel-collector:
     container_name: otel
-    image: otel/opentelemetry-collector-contrib
+    image: otel/opentelemetry-collector-contrib:0.155.0
     command: --config=/etc/otelcol/config.yaml
     ports:
       - "4318:4318" # HTTP
@@ -55,7 +55,7 @@ services:
     volumes:
       - ./config/otel_collector.yaml:/etc/otelcol/config.yaml:ro
   jaeger:
-    image: jaegertracing/jaeger:latest
+    image: jaegertracing/jaeger:2.19.0
     container_name: jaeger
     ports:
       - "16686:16686" # Web UI http://localhost:16686
@@ -68,7 +68,7 @@ services:
       COLLECTOR_OTLP_ENABLED: "true"
       LOG_LEVEL: debug
   prom:
-    image: prom/prometheus
+    image: prom/prometheus:v3.13.0
     ports:
       - "9099:9090"
     command: --config.file=/etc/prometheus/prometheus.yaml

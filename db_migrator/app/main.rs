@@ -1,10 +1,7 @@
 use {
     crate::config::Environment,
-    crate::observability::{metrics::init_metrics, otel::OtelGuard, tracing::init_traces},
-    opentelemetry::trace::TracerProvider as _,
-    tracing::{info_span, level_filters::LevelFilter},
-    tracing_opentelemetry::OpenTelemetryLayer,
-    tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer},
+    crate::observability::{metrics::init_metrics, otel::OtelGuard, logs::init_logs_and_tracing},
+    tracing::info_span,
 };
 mod observability;
 pub mod app;
@@ -24,19 +21,7 @@ fn main() {
         }
     };
 
-    let level = tracing_subscriber::fmt::layer().with_filter(LevelFilter::INFO);
-    let subscriber = tracing_subscriber::registry().with(level);
-
-    let mut tracing_provider = None;
-    if config.with_tracing && config.collector_url.is_some() {
-        let collector_url = config.collector_url.as_ref().unwrap();
-        let sdk_tracer_provider = init_traces(&format!("{}/traces", collector_url));
-        let tracer = sdk_tracer_provider.tracer("Migrator tracing");
-        subscriber.with(OpenTelemetryLayer::new(tracer)).init();
-        tracing_provider = Some(sdk_tracer_provider);
-    } else {
-        subscriber.init();
-    }
+    let tracing_provider = init_logs_and_tracing(&config);
 
     let metrics_provider = if config.with_metrics && config.collector_url.is_some() {
         let collector_url = config.collector_url.as_ref().unwrap();
