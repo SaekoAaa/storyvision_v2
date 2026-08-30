@@ -49,3 +49,33 @@ tasks:
     cmds:
       - docker compose --profile monitoring up -d
     desc: Start observability tools (OTel, Jaeger, Prometheus)
+
+  k8s_apply_secrets:
+    desc: Create or update K8s secrets from local env file
+    cmds:
+      - kubectl create secret generic mysql-secret \
+        --from-env-file=.secrets/mysql.env \
+        --dry-run=client \
+        -o yaml |
+        kubectl apply -f -
+      - kubectl describe secret mysql-secret
+    vars:
+      NAMESPACE: '{{default "default" .NAMESPACE}}'
+      MYSQL_ENV: '{{default "k8s/.secrets/mysql.env/" .MYSQL_ENV}}'
+    preconditions:
+      - sh: command -v kubectl >/dev/null
+        msg: kubectl is not installed
+      - sh: test -f "{{.MYSQL_ENV}}"
+        msg: "{{.MYSQL_ENV}} is missing; copy it
+        from .secrets/mysql.env.example"
+      - sh: kubectl cluster-info >/dev/null
+        msg: kubectl cannot connect to the current
+        cluster
+    cmds:
+      - |
+        kubectl create secret generic mysql-secret \
+          --namespace "{{.NAMESPACE}}" \
+          --from-env-file="{{.MYSQL_ENV}}" \
+          --dry-run=client \
+          --output=yaml |
+        kubectl apply --filename=-
