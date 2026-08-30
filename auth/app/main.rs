@@ -1,3 +1,5 @@
+use sqlx::MySqlPool;
+use tracing_subscriber::EnvFilter;
 use {
     argon2::password_hash::SaltString,
     auth_service::features::common::AuthState,
@@ -9,9 +11,7 @@ use {
         sync::Arc,
     },
     tokio::select,
-    tracing::level_filters::LevelFilter,
 };
-use database::init_database;
 use config::Environment;
 use openapi::init_openapi;
 use router::init_router;
@@ -32,7 +32,10 @@ async fn main() {
     };
     let env = Environment::load_env().expect("Loading environment variables");
     tracing_subscriber::fmt()
-        .with_max_level(LevelFilter::DEBUG)
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("info")),
+        )
         .init();
 
     let metrics_provider = if env.with_metrics && env.collector_url.is_some() {
@@ -51,17 +54,14 @@ async fn main() {
         "mysql://{}:{}@{}:{}/{}?charset=utf8mb4",
         env.mysql_user, env.mysql_password, env.db_address, env.mysql_port, env.mysql_database
     );
-    let db = init_database(&mysql_connection_string)
-        .await
-        .expect("Connecting to database");
-    let db_ptr = Arc::new(db);
+    tracing::debug!("Connecting to database with url: {0}:{1}", env.db_address, env.mysql_port);
+    let pool = MySqlPool::connect(&mysql_connection_string).await.expect("Failed to connect to database");
+    let db_ptr = Arc::new(pool);
     let encoded_salt = general_purpose::STANDARD.encode(env.salt);
-
-    // TODO token secret
 
     let auth_state = Arc::new(AuthState {
         pool: db_ptr.clone(),
-        token_secret: "secret".to_string(),
+        token_secret: env.token_secret,
         saltstring: SaltString::from_b64(&encoded_salt).expect("Should generate salt"),
         secure_cookies: env.secure_cookies,
     });

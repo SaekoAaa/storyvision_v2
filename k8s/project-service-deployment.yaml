@@ -35,6 +35,11 @@ spec:
                 secretKeyRef:
                   name: mysql-secret
                   key: MYSQL_PASSWORD
+            - name: TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: TOKEN_SECRET
             - name: APP_PORT
               value: "4000"
             - name: MYSQL_ADDRESS

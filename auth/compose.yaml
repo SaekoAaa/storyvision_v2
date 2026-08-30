@@ -13,6 +13,7 @@ services:
       APP_ADDRESS: "0.0.0.0"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       SALT: "${SALT}"
+      TOKEN_SECRET: "${TOKEN_SECRET}"
     depends_on:
       - mysql
     ports:

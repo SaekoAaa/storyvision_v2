@@ -98,10 +98,11 @@ services:
       MYSQL_ADDRESS: "mysql"
       APP_ADDRESS: "0.0.0.0"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      SALT: "12345salt"
+      SALT: "${SALT}"
       WITH_METRICS: "true"
       COLLECTOR_URL: "http://otel:4318/v1"
-      SECURE_COOKIES: "false"
+      SECURE_COOKIES: "false"  #only for testing purposes
+      TOKEN_SECRET: "${TOKEN_SECRET}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -125,7 +126,7 @@ services:
       MYSQL_ADDRESS: "mysql"
       APP_ADDRESS: "0.0.0.0"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      SALT: "12345salt"
+      TOKEN_SECRET: "${TOKEN_SECRET}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -148,7 +149,7 @@ services:
       NEO4J_PASSWORD: ${NEO4J_PASSWORD}
       NEO4J_URI: bolt://neo4j_graph:7687
       NEO4J_USER: ${NEO4J_USER}
-      SALT: "12345salt"
+      TOKEN_SECRET: "${TOKEN_SECRET}"
     depends_on:
       neo4j:
         condition: service_healthy

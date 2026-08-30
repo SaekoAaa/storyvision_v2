@@ -1,4 +1,5 @@
 use axum::middleware::from_fn_with_state;
+use tracing_subscriber::EnvFilter;
 use entities_service::features::common::AppState;
 
 use test_user_data::insert_test_user_data;
@@ -11,7 +12,6 @@ use {
         sync::Arc,
     },
     tokio::select,
-    tracing::level_filters::LevelFilter,
 };
 use config::Environment;
 use mw_validate_jwt::mw_validate_access_token;
@@ -33,7 +33,10 @@ async fn main() {
     };
     let env = Environment::load_env().expect("Loading environment variables");
     tracing_subscriber::fmt()
-        .with_max_level(LevelFilter::DEBUG)
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("info")),
+        )
         .init();
 
     tracing::debug!("Connected to database");
@@ -44,7 +47,7 @@ async fn main() {
     tracing::debug!("Connected to Neo4j");
     let state = Arc::new(AppState {
         graph: Arc::new(graph),
-        token_secret: "secret".to_string(),
+        token_secret: env.token_secret,
     });
     let mut router = init_router(state.clone());
     if env.test_user_data {

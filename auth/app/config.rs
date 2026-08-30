@@ -13,9 +13,13 @@ pub struct Environment {
     pub collector_url: Option<String>,
     pub with_metrics: bool,
     pub secure_cookies: bool,
+    pub token_secret: String,
 }
 impl Environment {
     pub fn load_env() -> anyhow::Result<Self> {
+        let token_secret = var("TOKEN_SECRET").context("TOKEN_SECRET")?;
+        anyhow::ensure!(token_secret.len() >= 32, "TOKEN_SECRET must be at least 32 bytes");
+
         Ok(Self {
             mysql_database: var("MYSQL_DATABASE").context("MYSQL_DATABASE")?,
             mysql_port: var("MYSQL_PORT").unwrap_or(String::from("3306")),
@@ -34,6 +38,7 @@ impl Environment {
             secure_cookies: var("SECURE_COOKIES")
                 .map(|v| v == "true")
                 .unwrap_or_else(|_| !cfg!(debug_assertions)),
+            token_secret,
         })
     }
 }

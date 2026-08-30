@@ -17,7 +17,7 @@ pub fn run() -> anyhow::Result<()> {
         "mysql://{}:{}@{}:{}/{}",
         env.mysql_user, env.mysql_password, env.database_address, env.database_port, env.database
     );
-    tracing::info!("connecting to db with: {}", mysql_connection_string);
+    tracing::debug!("Connecting to database with url: {0}:{1}", env.database_address, env.database_port);
     let pool = connect_to_database(&mysql_connection_string)
         .inspect_err(|error| tracing::error!(%error, database = env.database, database.user = env.mysql_user, database.address = env.database_address, database.port = env.database_port, "Connecting to database error"))?;
 

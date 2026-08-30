@@ -11,8 +11,6 @@ pub async fn refresh_token_usecase(
     pool: &MySqlPool,
 ) -> Result<String, RefreshTokenError> {
     let refresh_token_hash = format!("{:X}", Sha256::digest(refresh_token.as_bytes()));
-    tracing::debug!("token: {}", refresh_token);
-    tracing::debug!("Debug: {}", refresh_token_hash);
     match sqlx::query_as(
         r#"SELECT user_id as id FROM sessions WHERE refresh_token_hash = ? LIMIT 1"#,
     )

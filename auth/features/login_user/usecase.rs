@@ -48,9 +48,6 @@ pub async fn login_user_usecase(
             let refresh_token_hash = &format!("{:X}", Sha256::digest(refresh_token.as_bytes()));
             let expires_at =
                 OffsetDateTime::now_utc().saturating_add(Duration::days(REFRESH_EXPIRY_DAYS));
-
-            tracing::debug!("token: {}", refresh_token);
-            tracing::debug!("Create: {}", refresh_token_hash);
             sqlx::query(
                 r#"
             INSERT INTO sessions (user_id, refresh_token_hash, expires_at, ip_address, device_info)

@@ -21,7 +21,6 @@ pub async fn mw_validate_access_token(
         Some(v) => v.to_str().unwrap_or(""),
         None => return unauthorized("NO_TOKEN", "Authorization header not found"),
     };
-    tracing::debug!(auth_header);
     if !auth_header.starts_with("Bearer ") {
         return unauthorized(
             "INVALID_FORMAT",
@@ -30,7 +29,6 @@ pub async fn mw_validate_access_token(
     }
 
     let token = &auth_header["Bearer ".len()..];
-    tracing::debug!(token);
     let token_data: TokenData<JWTClaims> = match validate_jwt_token(token, &app_state.token_secret)
     {
         Ok(data) => data,
@@ -50,7 +48,6 @@ pub async fn mw_validate_access_token(
     request.extensions_mut().insert(user_data);
     tracing::debug!("Finished validation");
 
-    // 5. Передаём дальше
     next.run(request).await
 }
 fn unauthorized(code: &str, message: &str) -> Response {
