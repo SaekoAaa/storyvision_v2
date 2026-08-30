@@ -1,152 +1,238 @@
+# Storyvision
 
-# StoryMotion Backend Server
+Storyvision is a project backend for building and exploring fictional worlds. It lets users create collaborative projects and model story data—characters, events, relations, and connections—as a graph.
 
-## В данный момент полностью переношу архитектуру на Feature-based по причине сложности деплоя.
-### Было: 
-Layered Architecture
+The repository is a Rust workspace made up of small, independently deployable services. The application is functional and has a complete local development stack, but it is still being hardened for automated delivery and production-like operation.
 
-<img width="327" height="588" alt="image" src="https://github.com/user-attachments/assets/76cbde6c-f174-42a1-8579-895e9106666a" />
+## What is implemented
 
-### Стало:
-Feature based architecture
+- User registration, login, refresh-token rotation, logout, and current-user lookup
+- JWT authentication shared by the API services
+- Project creation, listing, metadata updates, deletion, and member management
+- Character, event, relation, and connection management in Neo4j
+- Complete project-graph retrieval and JSON graph import
+- MySQL schema, seed-data, rollback, cleanup, and dry-run migration modes
+- Health endpoints and graceful shutdown for the API services
+- OpenAPI/RapiDoc documentation for the Auth API
+- Local metrics and tracing with OpenTelemetry, Prometheus, Grafana, and Jaeger
+- Docker Compose profiles for running individual parts of the stack
+- Development Kubernetes manifests
 
-<img width="402" height="574" alt="image" src="https://github.com/user-attachments/assets/3fd03e28-d38f-4f8a-87a5-8b5c9a0407b7" />
+## Architecture
 
-## Запуск и разработка
+```mermaid
+flowchart LR
+    Client[Client] --> Gateway[Nginx gateway]
+    Gateway --> Auth[Auth service]
+    Gateway --> Projects[Projects service]
+    Gateway --> Entities[Entities service]
 
-### Локальный запуск (через Cargo)
-Так как проект использует Cargo Workspace, вы можете собирать и запускать сервисы независимо:
-```bash
-# Запуск конкретного сервиса (например, auth)
-cargo run -p auth_service
+    Auth --> MySQL[(MySQL)]
+    Projects --> MySQL
+    Migrator[DB migrator] --> MySQL
+    Entities --> Neo4j[(Neo4j)]
 
-# Сборка конкретного сервиса в release
-cargo build -p projects_service --release
+    Auth -. metrics .-> OTel[OpenTelemetry Collector]
+    Migrator -. metrics and traces .-> OTel
+    OTel --> Prometheus[Prometheus]
+    OTel --> Jaeger[Jaeger]
+    Prometheus --> Grafana[Grafana]
 ```
 
-### Запуск через Docker Compose (Профили)
-Все сервисы и инфраструктура объединены в корневом `compose.yaml` с разделением по профилям:
+The workspace contains four Rust packages:
 
-* **Только базы данных** (MySQL запускается по умолчанию):
-  ```bash
-  docker compose up -d
-  ```
+| Package | Responsibility | Storage |
+| --- | --- | --- |
+| `auth_service` | Users, credentials, access tokens, and sessions | MySQL |
+| `projects_service` | Project metadata, ownership, and membership | MySQL |
+| `entities_service` | Characters, events, relations, connections, and graph import | Neo4j |
+| `migrator_service` | MySQL schema and development seed data | MySQL |
 
-* **Применить миграции БД** (запустит MySQL, проверит здоровье, накатит миграции и выключит контейнер мигратора):
-  ```bash
-  docker compose --profile migration up
-  ```
+Application code follows a feature-based structure. A feature normally owns its HTTP handler, use case, DTOs, and error mapping instead of being split across global controller and service directories.
 
-* **Запуск базового API стека** (Auth, Projects, Nginx Gateway, MySQL):
-  ```bash
-  docker compose --profile core --profile gateway up -d
-  ```
+## Technology
 
-* **Запуск графового стека** (Neo4j & Entities Service):
-  ```bash
-  docker compose --profile graph up -d
-  ```
+- Rust 2024, Axum, and Tokio
+- SQLx and MySQL
+- `neo4rs` and Neo4j with APOC
+- JWT and Argon2
+- Docker, Docker Compose, and Nginx
+- Kubernetes manifests
+- OpenTelemetry Collector, Prometheus, Grafana, and Jaeger
+- Utoipa and RapiDoc
 
-* **Запуск мониторинга** (Jaeger, Prometheus, OTel Collector):
-  ```bash
-  docker compose --profile monitoring up -d
-  ```
+The Rust toolchain is pinned in `rust-toolchain.toml`; rustup installs the required Clippy and rustfmt components automatically.
 
-* **Запустить вообще всё**:
-  ```bash
-  docker compose --profile all up -d
-  ```
+## Getting started
 
-### Быстрый запуск через Taskfile (Рекомендуется)
-Если у вас установлен `task` (Go Task), вы можете использовать более короткие команды:
+### Requirements
 
-* **Запуск ядра** (MySQL, Auth, Projects):
-  ```bash
-  task core
-  ```
+- Docker with Docker Compose
+- Rustup when running services or checks outside containers
+- [Task](https://taskfile.dev/) if you want to use the optional command shortcuts
+- `kubectl` only when working with the Kubernetes manifests
 
-* **Запуск миграций** (по умолчанию `MIGRATION_TYPE=1`):
-  ```bash
-  task migrate
-  # Или с указанием типа миграции (например, 3 — с фикстурами данных)
-  task migrate -- 3
-  ```
+### Configure the environment
 
-* **Запуск Nginx Gateway**:
-  ```bash
-  task nginx
-  ```
+Create a local environment file:
 
-* **Запуск мониторинга** (Prometheus, Jaeger, OTel):
-  ```bash
-  task monitoring
-  ```
+```bash
+cp .env.example .env
+```
 
-## Архитектура
-~~ В процессе ~~
+Fill in at least the MySQL and Neo4j credentials, `SALT`, and `TOKEN_SECRET`. The token secret must be at least 32 bytes. The `.env` file is ignored by Git and must not be committed.
 
-## Основные возможности
+### Start the application
 
-* **SOLID-паттерны** — чистая и расширяемая структура
-* **Валидация запросов** — строгая проверка входных данных
-* **Тестирование отдельных слоёв** (*в процессе покрытия Service Layer*)
-* **API-документация** — сгенерирована через [utoipa](https://docs.rs/utoipa/latest/utoipa/)
-* **Запуск в контейнере** — Docker и Docker Compose
-* **Логирование и метрики** — централизованный сбор логов, метрики в процессе интеграции
+Start MySQL first:
 
-## План спринтов
+```bash
+docker compose up -d
+```
 
-| # | Этап                                              | Статус         |
-| - | ------------------------------------------------- | -------------- |
-| 1 | Создание шаблона Figma и схемы БД              | ✅ Завершено    |
-| 2 | Авторизация и заполнение БД                    | ✅ Завершено    |
-| 3 | API проектов, страница GitHub                  | ✅ Завершено    |
-| 4 | Документирование и тестирование API            | ✅ Завершено    |
-| 5 | API героев и событий, метрики                  | ✅ Завершено    |
-| 6 | Подключение Neo4j                             | ✅ Завершено |
-| 7 | Тестирование Service layer, Postman collection | ✅ Завершено  |
+Apply the MySQL schema:
 
-## API
+```bash
+docker compose --profile migration up db_migrator
+```
 
-Документация доступна по эндпоинту:
-postman.json
+Start the three API services and the gateway:
 
-## Идеи для развития
+```bash
+docker compose --profile core --profile graph --profile gateway up -d
+```
 
-* [ ] Добавить OpenTelemetry для метрик
-* [ ] Реализовать кэширование на уровне сервиса
-* [ ] Автоматизировать миграции и CI/CD
-* [ ] Добавить интеграционные тесты
+The gateway is available at `http://localhost:8081`. Its health endpoint is:
 
+```text
+GET http://localhost:8081/healthcheck
+```
 
-## Технологии
+To start the complete local stack, including observability:
 
-* **Rust**, `axum`, `tokio`, `sqlx`
-* **MySQL / Neo4j**
-* **Docker Compose**
-* **Postman**, **Figma**
+```bash
+docker compose --profile all up -d
+```
 
-## Галерея
-### Обработка ошибок и документация
+Useful local interfaces:
 
-<img width="892" height="1042" alt="image" src="https://github.com/user-attachments/assets/ffda4862-f638-4dfc-a814-1e7581b7dc82" />
-<img width="1667" height="524" alt="image" src="https://github.com/user-attachments/assets/41b3fca0-13ba-4b68-a1ad-6ab066da5587" />
+| Component | Address |
+| --- | --- |
+| API gateway | `http://localhost:8081` |
+| Neo4j Browser | `http://localhost:7474` |
+| Grafana | `http://localhost:3000` |
+| Jaeger | `http://localhost:16686` |
+| Prometheus | `http://localhost:9099` |
 
-### Логирование в консоль
+Stop the stack with:
 
-<img width="1051" height="92" alt="image" src="https://github.com/user-attachments/assets/0cfcee19-18b6-4f49-b7ec-db7654cda21a" />
+```bash
+docker compose --profile all down
+```
 
-### Мигратор базы данных 
+Add `--volumes` only when you intentionally want to delete local database and Grafana data.
 
-<img width="875" height="171" alt="image" src="https://github.com/user-attachments/assets/53233289-96cc-45c6-a2d0-9c63da38d340" />
+### Task shortcuts
 
-### Сборка дорожек
-<img width="1064" height="824" alt="image" src="https://github.com/user-attachments/assets/7a1306cc-2ac0-4068-bba2-30608daa9357" />
+The root `Taskfile.yaml` provides shortcuts for common operations:
 
-### Логирование
-![telegram-cloud-photo-size-2-5226562242881458836-y](https://github.com/user-attachments/assets/2784955e-e775-4450-b117-7d4c4dc83c34)
+```bash
+task core        # MySQL, Auth, and Projects
+task nginx       # Gateway and its required services
+task migrate     # Apply the default MySQL migration
+task migrate -- 3 # Apply migrations and development seed data
+task monitoring  # OTel Collector, Prometheus, Grafana, and Jaeger
+```
 
----
+### Run a service with Cargo
 
-**Storyvision** — часть проекта *StoryMotion*
-Создано с ❤️ на Rust
+Infrastructure still needs to be available and the required environment variables must be set.
+
+```bash
+cargo run -p auth_service
+cargo run -p projects_service
+cargo run -p entities_service
+```
+
+## API outline
+
+All business routes are versioned under `/v1`:
+
+```text
+/v1/auth       registration, login, refresh, logout, and current user
+/v1/projects   project CRUD and membership
+/v1/entities   characters, events, relations, connections, graph, and import
+```
+
+The Auth service exposes RapiDoc at `/rapidoc` and its OpenAPI document at `/api-docs/openapi.json` when accessed directly. A Postman collection is available in `postman.json` for broader API exploration.
+
+Each API service also exposes `/healthcheck`; Auth additionally exposes `/db_healthcheck`.
+
+## Database migrations
+
+The migrator selects its operation through `MIGRATION_TYPE`:
+
+| Value | Operation |
+| --- | --- |
+| `1` | Apply schema |
+| `2` | Revert schema |
+| `3` | Apply schema and insert development data |
+| `4` | Apply schema and clear development data |
+| `5` | Validate connectivity and migration files without changing data |
+
+For example:
+
+```bash
+MIGRATION_TYPE=5 docker compose --profile migration up db_migrator
+```
+
+## Development checks
+
+Run the same baseline checks intended for CI before submitting changes:
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-targets --all-features
+docker compose config --quiet
+```
+
+Formatting and strict Clippy checks currently pass. Automated coverage is still small, so successful compilation is not yet a substitute for integration testing.
+
+## Kubernetes
+
+The `k8s/` directory contains development manifests for MySQL, migrations, Auth, Projects, and ingress routing. They are a starting point, not a production deployment.
+
+Secret values are not stored in Git. Create `k8s/.secrets/mysql.env` from the provided example and apply it through the Taskfile:
+
+```bash
+cp k8s/.secrets/mysql.env.example k8s/.secrets/mysql.env
+task k8s_apply_secrets MYSQL_ENV=k8s/.secrets/mysql.env
+```
+
+Never commit the populated environment file. Production deployment still needs immutable registry images, probes, resource policies, external secret management, database backups, and environment-specific configuration.
+
+## Current project state
+
+Storyvision is currently a development-stage backend:
+
+| Area | State |
+| --- | --- |
+| Core API behavior | Implemented across Auth, Projects, and Entities |
+| Local environment | Complete Compose stack with gateway and observability |
+| Security baseline | Plaintext repository secrets and sensitive logging removed |
+| Code quality | Pinned toolchain; rustfmt and strict Clippy baseline established |
+| Automated tests | Minimal; meaningful integration and end-to-end coverage is needed |
+| CI/CD | Not implemented yet; this is the next infrastructure milestone |
+| Kubernetes | Development manifests only |
+| Observability | Local foundation exists; coverage, dashboards, and alerts are incomplete |
+| Production readiness | Not production-ready |
+
+## Near-term roadmap
+
+1. Add pull-request CI for formatting, Clippy, tests, dependency auditing, secret scanning, container builds, and manifest validation.
+2. Add Auth and project-authorization integration tests backed by MySQL.
+3. Add Neo4j integration tests for entity and graph operations.
+4. Standardize OpenAPI coverage, error responses, metrics, and tracing across services.
+5. Build immutable container images and a reproducible staging deployment.
+6. Harden Kubernetes workloads and establish backup, alerting, and recovery procedures.
