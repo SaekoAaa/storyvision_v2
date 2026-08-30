@@ -1,10 +1,14 @@
+use config::Environment;
+use openapi::init_openapi;
+use router::init_router;
+use shutdown::shutdown_task;
 use sqlx::MySqlPool;
 use tracing_subscriber::EnvFilter;
 use {
     argon2::password_hash::SaltString,
     auth_service::features::common::AuthState,
     axum_server::Handle,
-    base64::{engine::general_purpose, Engine},
+    base64::{Engine, engine::general_purpose},
     std::{
         net::{Ipv4Addr, SocketAddr},
         str::FromStr,
@@ -12,18 +16,14 @@ use {
     },
     tokio::select,
 };
-use config::Environment;
-use openapi::init_openapi;
-use router::init_router;
-use shutdown::shutdown_task;
 
-pub mod database;
 pub mod config;
+pub mod database;
 pub mod mw_validate_jwt;
+pub mod observability;
 pub mod openapi;
 pub mod router;
 pub mod shutdown;
-pub mod observability;
 
 #[tokio::main]
 async fn main() {
@@ -33,13 +33,13 @@ async fn main() {
     let env = Environment::load_env().expect("Loading environment variables");
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("info")),
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
         )
         .init();
 
-    let metrics_provider = if env.with_metrics && env.collector_url.is_some() {
-        let collector_url = env.collector_url.as_ref().unwrap();
+    let metrics_provider = if let Some(collector_url) = env.collector_url
+        && env.with_metrics
+    {
         observability::metrics::init_metrics(&format!("{}/metrics", collector_url)).ok()
     } else {
         None
@@ -54,8 +54,14 @@ async fn main() {
         "mysql://{}:{}@{}:{}/{}?charset=utf8mb4",
         env.mysql_user, env.mysql_password, env.db_address, env.mysql_port, env.mysql_database
     );
-    tracing::debug!("Connecting to database with url: {0}:{1}", env.db_address, env.mysql_port);
-    let pool = MySqlPool::connect(&mysql_connection_string).await.expect("Failed to connect to database");
+    tracing::debug!(
+        "Connecting to database with url: {0}:{1}",
+        env.db_address,
+        env.mysql_port
+    );
+    let pool = MySqlPool::connect(&mysql_connection_string)
+        .await
+        .expect("Failed to connect to database");
     let db_ptr = Arc::new(pool);
     let encoded_salt = general_purpose::STANDARD.encode(env.salt);
 

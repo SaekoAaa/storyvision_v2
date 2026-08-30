@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{Extension, Json, extract::State, http::StatusCode, response::IntoResponse};
 
 use crate::features::{
-    common::{ProjectState, UserData, api_error::ApiError, api_response::HandlerResult},
+    common::{ProjectState, UserData, api_response::HandlerResult},
     list_projects::{
         dto::ProjectResponse, error::ListProjectErrorResponse, usecase::list_projects_usecase,
     },

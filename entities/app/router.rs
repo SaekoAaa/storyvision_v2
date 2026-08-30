@@ -18,10 +18,7 @@ use {
 
 pub fn init_router(state: Arc<AppState>) -> Router {
     Router::new()
-        .route(
-            "/healthcheck",
-            get(async move || StatusCode::OK),
-        )
+        .route("/healthcheck", get(async move || StatusCode::OK))
         .nest(
             ROUTER_VERSION_PATH,
             Router::new().nest(

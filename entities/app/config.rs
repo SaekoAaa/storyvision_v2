@@ -15,7 +15,10 @@ pub struct Environment {
 impl Environment {
     pub fn load_env() -> anyhow::Result<Self> {
         let token_secret = var("TOKEN_SECRET").context("TOKEN_SECRET is required")?;
-        anyhow::ensure!(token_secret.len() >= 32, "TOKEN_SECRET must be at least 32 bytes");
+        anyhow::ensure!(
+            token_secret.len() >= 32,
+            "TOKEN_SECRET must be at least 32 bytes"
+        );
 
         Ok(Self {
             neo4j_uri: var("NEO4J_URI").unwrap_or(String::from("bolt://localhost:7687")),

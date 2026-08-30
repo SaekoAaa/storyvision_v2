@@ -18,8 +18,8 @@ pub fn verify_password(password: &str, password_hash: &str) -> argon2::password_
 
 #[cfg(test)]
 mod test {
-    use argon2::password_hash::{SaltString, rand_core::OsRng};
     use crate::features::crypto::hash::{hash_password, verify_password};
+    use argon2::password_hash::{SaltString, rand_core::OsRng};
 
     #[test]
     fn test_password_hash() -> anyhow::Result<()> {

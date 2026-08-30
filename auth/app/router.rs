@@ -13,17 +13,14 @@ use {
         constants::ROUTER_VERSION_PATH,
         features::{common::AuthState, register_user::handler::handler_register_user},
     },
-    axum::{http::StatusCode, routing::post, Router},
+    axum::{Router, http::StatusCode, routing::post},
     std::sync::Arc,
     tower_http::{cors::CorsLayer, trace::TraceLayer},
 };
 
 pub fn init_router(auth_state: Arc<AuthState>) -> Router {
     Router::new()
-        .route(
-            "/healthcheck",
-            get(async move || StatusCode::OK),
-        )
+        .route("/healthcheck", get(async move || StatusCode::OK))
         .route(
             "/db_healthcheck",
             get(db_healtcheck_handler).with_state(auth_state.clone()),
@@ -55,5 +52,7 @@ pub fn init_router(auth_state: Arc<AuthState>) -> Router {
                 .allow_methods(tower_http::cors::Any),
         )
         .layer(TraceLayer::new_for_http())
-        .layer(axum::middleware::from_fn(crate::observability::metrics::http_metrics_middleware))
+        .layer(axum::middleware::from_fn(
+            crate::observability::metrics::http_metrics_middleware,
+        ))
 }

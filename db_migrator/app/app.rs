@@ -3,10 +3,10 @@ use std::{fs::read_to_string, path::Path};
 use opentelemetry::KeyValue;
 use tracing::debug_span;
 
-use crate::observability::metrics::{MIGRATIONS_COUNTER, MIGRATIONS_DURATION};
 use crate::apply_tx::{apply_separately, apply_transaction};
-use crate::database::connect_to_database;
 use crate::config::{Environment, MigrationType};
+use crate::database::connect_to_database;
+use crate::observability::metrics::{MIGRATIONS_COUNTER, MIGRATIONS_DURATION};
 
 #[tracing::instrument(name = "load_env", level = "info")]
 pub fn run() -> anyhow::Result<()> {
@@ -17,7 +17,11 @@ pub fn run() -> anyhow::Result<()> {
         "mysql://{}:{}@{}:{}/{}",
         env.mysql_user, env.mysql_password, env.database_address, env.database_port, env.database
     );
-    tracing::debug!("Connecting to database with url: {0}:{1}", env.database_address, env.database_port);
+    tracing::debug!(
+        "Connecting to database with url: {0}:{1}",
+        env.database_address,
+        env.database_port
+    );
     let pool = connect_to_database(&mysql_connection_string)
         .inspect_err(|error| tracing::error!(%error, database = env.database, database.user = env.mysql_user, database.address = env.database_address, database.port = env.database_port, "Connecting to database error"))?;
 
@@ -111,13 +115,21 @@ pub fn run() -> anyhow::Result<()> {
         }
         MigrationType::DryRun => {
             tracing::info!("Dry-run mode: Verifying database connection and migrations directory");
-            
+
             let path = Path::new(&env.migrations_path);
             if !path.exists() {
-                return Err(anyhow::anyhow!("Migrations directory not found at: {}", env.migrations_path));
+                return Err(anyhow::anyhow!(
+                    "Migrations directory not found at: {}",
+                    env.migrations_path
+                ));
             }
-            
-            let files = ["mysql_up.sql", "mysql_down.sql", "mysql_fill_data.sql", "mysql_drop_data.sql"];
+
+            let files = [
+                "mysql_up.sql",
+                "mysql_down.sql",
+                "mysql_fill_data.sql",
+                "mysql_drop_data.sql",
+            ];
             for file in files {
                 let file_path = path.join(file);
                 if file_path.exists() {
@@ -126,7 +138,7 @@ pub fn run() -> anyhow::Result<()> {
                     tracing::warn!("Optional migration file not found: {}", file);
                 }
             }
-            
+
             tracing::info!("Dry-run check passed successfully!");
         }
     };

@@ -1,6 +1,6 @@
 use axum::Json;
-use serde_json::json;
 use axum::{http::StatusCode, response::IntoResponse};
+use serde_json::json;
 
 pub struct Response {
     pub status: StatusCode,
@@ -8,7 +8,7 @@ pub struct Response {
     pub message: String,
 }
 
-pub trait ApiError: Sized  {
+pub trait ApiError: Sized {
     fn error_message(&self) -> String;
     fn error_response(&self) -> Response;
     fn into_response(self) -> axum::response::Response {

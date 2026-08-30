@@ -1,13 +1,13 @@
 use {
     crate::config::Environment,
-    crate::observability::{metrics::init_metrics, otel::OtelGuard, logs::init_logs_and_tracing},
+    crate::observability::{logs::init_logs_and_tracing, metrics::init_metrics, otel::OtelGuard},
     tracing::info_span,
 };
-mod observability;
 pub mod app;
 pub mod apply_tx;
-pub mod database;
 pub mod config;
+pub mod database;
+mod observability;
 
 fn main() {
     let _ = dotenvy::dotenv();
@@ -23,8 +23,9 @@ fn main() {
 
     let tracing_provider = init_logs_and_tracing(&config);
 
-    let metrics_provider = if config.with_metrics && config.collector_url.is_some() {
-        let collector_url = config.collector_url.as_ref().unwrap();
+    let metrics_provider = if let Some(collector_url) = config.collector_url
+        && config.with_metrics
+    {
         init_metrics(&format!("{}/metrics", collector_url)).ok()
     } else {
         None

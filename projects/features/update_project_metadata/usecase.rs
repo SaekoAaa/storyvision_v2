@@ -12,7 +12,7 @@ pub async fn update_project_metadata_usecase(
             .bind(project_id)
             .fetch_optional(pool)
             .await?;
-    if let None = project_owner_id {
+    if project_owner_id.is_none() {
         return Err(UpdateProjectMetadataError::NotFound {
             user_response: "Permission denied".into(),
             details: "Project owner not found".into(),

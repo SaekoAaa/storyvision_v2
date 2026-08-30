@@ -1,8 +1,4 @@
-use {
-    serde::{Deserialize, Serialize},
-    std::borrow::Cow,
-    utoipa::ToSchema,
-};
+use {serde::Serialize, utoipa::ToSchema};
 
 #[derive(Serialize, ToSchema)]
 pub struct GetUserResponse {

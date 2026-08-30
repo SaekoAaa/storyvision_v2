@@ -1,6 +1,4 @@
-use {
-    argon2::password_hash::SaltString, std::sync::Arc,
-};
+use {argon2::password_hash::SaltString, std::sync::Arc};
 
 pub mod api_error;
 pub mod api_response;

@@ -35,7 +35,7 @@ impl ApiError for ListProjectErrorResponse {
                     "NOT_FOUND_ERROR".to_string(),
                     user_response.to_string(),
                 ),
-                ListProjectError::DatabaseError(err) => (
+                ListProjectError::DatabaseError(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "INTERNAL_SERVER_ERROR".to_string(),
                     "An internal database error occurred. Please try again later.".to_string(),

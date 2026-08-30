@@ -1,9 +1,7 @@
 use crate::features::common::api_error::{ApiError, Response};
-use axum::Json;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum_extra::extract::JsonDeserializerRejection;
-use serde_json::json;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RefreshTokenError {

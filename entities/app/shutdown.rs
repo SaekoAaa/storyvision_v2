@@ -1,7 +1,6 @@
 use axum_server::Handle;
 #[cfg(windows)]
 use entities_service::features::common::AppState;
-use std::time::Duration;
 
 const SHUTDOWN_GRACE_DEFAULT: u64 = 3;
 #[cfg(windows)]
@@ -31,7 +30,6 @@ pub async fn shutdown_task(
 }
 
 #[cfg(unix)]
-
 pub async fn shutdown_task(
     handle: Handle,
     // metrics_provider: Option<SdkMeterProvider>,

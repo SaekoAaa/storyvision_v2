@@ -37,7 +37,7 @@ pub async fn create_character_handler(
         StatusCode::CREATED,
         Json(CreateCharacterResponse {
             id: character.id,
-            project_id: project_id,
+            project_id,
             name: character.name,
             description: character.description,
         }),

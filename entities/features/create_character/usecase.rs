@@ -51,7 +51,7 @@ pub async fn create_character_usecase(
 
     Ok(Character {
         id: character_id,
-        project_id: project_id,
+        project_id,
         name: req.name,
         description: req.description,
         attributes: req.attributes,

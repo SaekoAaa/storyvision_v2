@@ -2,8 +2,8 @@ use crate::{constants::ACCESS_EXPIRY_SECONDS, features::register_user::error::Re
 use {
     crate::{
         constants,
-        model::*,
         features::crypto::{hash::hash_password, jwt::create_jwt_token},
+        model::*,
     },
     argon2::password_hash::SaltString,
     sha2::{Digest, Sha256},
@@ -25,10 +25,11 @@ pub async fn register_user(
     token_secret: &str,
     connect_info: SocketAddr,
 ) -> Result<RegisterData, RegisterError> {
-    if let Some(_) = sqlx::query("select id from users where email = ?")
+    if sqlx::query("select id from users where email = ?")
         .bind(email)
         .fetch_optional(pool)
         .await?
+        .is_some()
     {
         return Err(RegisterError::EmailAlreadyExists);
     }
@@ -59,7 +60,7 @@ pub async fn register_user(
             "#,
     )
     .bind(id)
-    .bind(&format!("{:X}", Sha256::digest(refresh_token)))
+    .bind(format!("{:X}", Sha256::digest(refresh_token)))
     .bind(OffsetDateTime::now_utc().saturating_add(Duration::days(constants::REFRESH_EXPIRY_DAYS)))
     .bind(Some(&connect_info.to_string()))
     .bind(None::<String>)

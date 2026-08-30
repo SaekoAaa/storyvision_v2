@@ -1,5 +1,4 @@
 use axum_server::Handle;
-use std::time::Duration;
 
 const SHUTDOWN_GRACE_DEFAULT: u64 = 3;
 #[cfg(windows)]

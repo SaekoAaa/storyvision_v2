@@ -9,7 +9,7 @@ pub async fn delete_project_usecase(
             .bind(project_id)
             .fetch_optional(pool)
             .await?;
-    if let None = project_owner_id {
+    if project_owner_id.is_none() {
         return Err(DeleteProjectError::NotFound {
             user_response: "Permission denied".into(),
             details: "Project owner not found".into(),

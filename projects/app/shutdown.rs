@@ -1,6 +1,4 @@
 use axum_server::Handle;
-use std::time::Duration;
-
 const SHUTDOWN_GRACE_DEFAULT: u64 = 3;
 #[cfg(windows)]
 pub async fn shutdown_task(
@@ -35,7 +33,6 @@ use {projects_service::features::common::ProjectState, std::sync::Arc};
 #[cfg(unix)]
 use {projects_service::features::common::ProjectState, std::sync::Arc};
 #[cfg(unix)]
-
 pub async fn shutdown_task(
     handle: Handle,
     state: Arc<ProjectState>,

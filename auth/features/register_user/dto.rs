@@ -1,13 +1,8 @@
-use {serde::{Deserialize, Serialize}, std::borrow::Cow, utoipa::ToSchema};
-
-
-pub enum RegisterUserError {
-    EmailAlreadyExists,
-    InvalidEmail,
-    WeakPassword,
-}
-
-
+use {
+    serde::{Deserialize, Serialize},
+    std::borrow::Cow,
+    utoipa::ToSchema,
+};
 
 #[derive(Deserialize, validator::Validate, ToSchema)]
 pub struct RegisterUserRequest<'a> {

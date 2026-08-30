@@ -1,5 +1,4 @@
 use crate::features::logout_user::error::LogoutError;
-use sha2::{Digest, Sha256};
 use sqlx::MySqlPool;
 
 pub async fn logout_user_usecase(id: u64, pool: &MySqlPool) -> Result<(), LogoutError> {

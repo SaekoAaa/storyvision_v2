@@ -1,5 +1,5 @@
-use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 use utoipa::ToSchema;
 
 #[derive(Deserialize, validator::Validate, ToSchema)]

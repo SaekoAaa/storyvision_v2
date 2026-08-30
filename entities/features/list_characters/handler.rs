@@ -13,7 +13,6 @@ use crate::features::{
 };
 
 use super::{
-    dto::ListCharactersResponse,
     error::{ListCharactersError, ListCharactersErrorResponse},
     usecase::list_characters_usecase,
 };

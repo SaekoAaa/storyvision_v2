@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use auth_service::{
     features::common::AuthState,
-    model::UserData,
     features::crypto::jwt::{JWTClaims, validate_jwt_token},
+    model::UserData,
 };
 use axum::{
     Json,

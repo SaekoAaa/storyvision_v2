@@ -1,7 +1,4 @@
 use axum::Extension;
-use serde_json::{Value, json};
-use tracing_subscriber::field::debug;
-use validator::{Validate, ValidationErrors};
 
 use crate::features::me::{
     dto::GetUserResponse, error::GetUserErrorResponse, usecase::get_user_usecase,
@@ -9,24 +6,11 @@ use crate::features::me::{
 
 use {
     crate::{
-        constants::REFRESH_TOKEN_ACCESS_PATH,
-        features::common::{
-            AuthState,
-            api_response::HandlerResult,
-            openapi::{BaseErrorResponseSchema, InternalErrorResponse},
-        },
+        features::common::{AuthState, api_response::HandlerResult},
         model::UserData,
     },
-    axum::{
-        Json,
-        extract::{ConnectInfo, State},
-        http::StatusCode,
-        response::IntoResponse,
-    },
-    axum_extra::extract::{CookieJar, JsonDeserializer, cookie::Cookie},
-    std::{net::SocketAddr, sync::Arc},
-    time::Duration,
-    utoipa::OpenApi,
+    axum::{Json, extract::State, http::StatusCode, response::IntoResponse},
+    std::sync::Arc,
 };
 pub async fn handler_get_user(
     State(app_state): State<Arc<AuthState>>,

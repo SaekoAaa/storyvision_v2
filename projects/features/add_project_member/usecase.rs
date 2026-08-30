@@ -13,7 +13,7 @@ pub async fn add_member_to_project_usecase(
             .bind(project_id)
             .fetch_optional(pool)
             .await?;
-    if let None = project_owner_id {
+    if project_owner_id.is_none() {
         return Err(AddProjectMemberError::NotFound {
             user_response: "Permission denied".into(),
             details: "Project owner not found".into(),

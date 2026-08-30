@@ -11,7 +11,7 @@ use validator::Validate;
 use crate::features::common::{AppState, UserData, api_response::HandlerResult};
 
 use super::{
-    dto::{GetRelationsPagination, GetRelationsResponse},
+    dto::GetRelationsPagination,
     error::{GetRelationsError, GetRelationsErrorResponse},
     usecase::get_relations_usecase,
 };

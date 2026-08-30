@@ -15,7 +15,10 @@ pub struct Environment {
 impl Environment {
     pub fn load_env() -> anyhow::Result<Self> {
         let token_secret = var("TOKEN_SECRET").context("TOKEN_SECRET")?;
-        anyhow::ensure!(token_secret.len() >= 32, "TOKEN_SECRET must be at least 32 bytes");
+        anyhow::ensure!(
+            token_secret.len() >= 32,
+            "TOKEN_SECRET must be at least 32 bytes"
+        );
 
         Ok(Self {
             mysql_database: var("MYSQL_DATABASE").context("MYSQL_DATABASE")?,
@@ -28,7 +31,7 @@ impl Environment {
                 .unwrap_or(String::from("4000"))
                 .parse()
                 .unwrap(),
-            test_user_data: var("TEST_USER_DATA").map_or(false, |e| e == "true"),
+            test_user_data: var("TEST_USER_DATA").is_ok_and(|e| e == "true"),
             token_secret,
         })
     }

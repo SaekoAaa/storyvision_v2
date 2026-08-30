@@ -1,1 +1,1 @@
-pub const ROUTER_VERSION_PATH: &'static str = "/v1";
+pub const ROUTER_VERSION_PATH: &str = "/v1";

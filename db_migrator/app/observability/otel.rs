@@ -15,15 +15,15 @@ pub struct OtelGuard {
 }
 impl Drop for OtelGuard {
     fn drop(&mut self) {
-        if let Some(tracer) = &self.tracer_provider {
-            if let Err(err) = tracer.shutdown() {
-                eprintln!("{err:?}");
-            }
+        if let Some(tracer) = &self.tracer_provider
+            && let Err(err) = tracer.shutdown()
+        {
+            eprintln!("{err:?}")
         }
-        if let Some(metrics) = &self.meter_provider {
-            if let Err(err) = metrics.shutdown() {
-                eprintln!("{err:?}");
-            }
+        if let Some(metrics) = &self.meter_provider
+            && let Err(err) = metrics.shutdown()
+        {
+            eprintln!("{err:?}")
         }
     }
 }

@@ -3,7 +3,6 @@ use axum::Extension;
 use crate::constants::REFRESH_TOKEN_ACCESS_PATH;
 use crate::features::common::AuthState;
 use crate::features::common::openapi::{BaseErrorResponseSchema, InternalErrorResponse};
-use crate::features::logout_user::error::LogoutErrorResponse;
 use crate::features::logout_user::usecase::logout_user_usecase;
 use crate::model::UserData;
 use {
@@ -12,7 +11,6 @@ use {
     std::sync::Arc,
     time::Duration,
     utoipa::OpenApi,
-    uuid::Uuid,
 };
 
 #[derive(Debug, OpenApi)]

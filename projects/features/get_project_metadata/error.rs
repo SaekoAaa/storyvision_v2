@@ -40,13 +40,13 @@ impl ApiError for GetProjectErrorResponse {
                     "NOT_FOUND_ERROR".to_string(),
                     user_response.to_string(),
                 ),
-                GetProjectError::DatabaseError(err) => (
+                GetProjectError::DatabaseError(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "INTERNAL_SERVER_ERROR".to_string(),
                     "An internal database error occurred. Please try again later.".to_string(),
                 ),
             },
-            GetProjectErrorResponse::NotFound { message, response } => (
+            GetProjectErrorResponse::NotFound { response, .. } => (
                 StatusCode::NOT_FOUND,
                 "PROJECT_NOT_FOUND".to_string(),
                 response.to_owned(),

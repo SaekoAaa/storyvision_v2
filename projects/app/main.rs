@@ -1,8 +1,8 @@
 use axum::middleware::from_fn_with_state;
 use projects_service::features::common::ProjectState;
 use sqlx::MySqlPool;
-use tracing_subscriber::EnvFilter;
 use test_user_data::insert_test_user_data;
+use tracing_subscriber::EnvFilter;
 
 use config::Environment;
 use mw_validate_jwt::mw_validate_access_token;
@@ -32,8 +32,7 @@ async fn main() {
     let env = Environment::load_env().expect("Loading environment variables");
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("info")),
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
         )
         .init();
 
@@ -41,9 +40,14 @@ async fn main() {
         "mysql://{}:{}@{}:{}/{}?charset=utf8mb4",
         env.mysql_user, env.mysql_password, env.db_address, env.mysql_port, env.mysql_database
     );
-    tracing::debug!("Connecting to database with url: {0}:{1}", env.db_address, env.mysql_port);
+    tracing::debug!(
+        "Connecting to database with url: {0}:{1}",
+        env.db_address,
+        env.mysql_port
+    );
     let pool = MySqlPool::connect(&mysql_connection_string)
-        .await.inspect(|_| tracing::debug!("Connected to database"))
+        .await
+        .inspect(|_| tracing::debug!("Connected to database"))
         .expect("Failed to connect to database");
 
     let state = Arc::new(ProjectState {

@@ -1,5 +1,5 @@
-use crate::model::{ProjectId, User, UserId};
 use crate::features::crypto::jwt::create_jwt_token;
+use crate::model::{ProjectId, UserId};
 use crate::{constants::ACCESS_EXPIRY_SECONDS, features::refresh_token::error::RefreshTokenError};
 use sha2::{Digest, Sha256};
 use sqlx::MySqlPool;
@@ -31,7 +31,7 @@ pub async fn refresh_token_usecase(
                 project_list,
                 id,
                 Duration::seconds(ACCESS_EXPIRY_SECONDS),
-                &token_secret,
+                token_secret,
             )?;
             Ok(new_access_token)
         }

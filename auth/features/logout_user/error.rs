@@ -1,7 +1,7 @@
+use crate::features::common::api_error::{ApiError, Response};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum_extra::extract::JsonDeserializerRejection;
-use crate::features::common::api_error::{ApiError, Response};
 
 #[derive(thiserror::Error, Debug)]
 pub enum LogoutError {
@@ -10,6 +10,7 @@ pub enum LogoutError {
 }
 
 #[derive(Debug, thiserror::Error)]
+#[expect(dead_code, reason = "Reserved for the logout handler error response")]
 pub enum LogoutErrorResponse {
     #[error("User login failed: {0}")]
     LogoutError(#[from] LogoutError),
@@ -19,7 +20,6 @@ pub enum LogoutErrorResponse {
     MissingRefreshToken,
     #[error("Refresh token expired or invalid")]
     RefreshTokenInvalid,
-
 }
 impl IntoResponse for LogoutErrorResponse {
     fn into_response(self) -> axum::response::Response {
@@ -27,6 +27,10 @@ impl IntoResponse for LogoutErrorResponse {
     }
 }
 impl ApiError for LogoutErrorResponse {
+    fn error_message(&self) -> String {
+        self.to_string()
+    }
+
     fn error_response(&self) -> Response {
         let (status, error, message) = match self {
             Self::LogoutError(err) => match err {
@@ -35,7 +39,6 @@ impl ApiError for LogoutErrorResponse {
                     "DATABASE_ERROR".to_string(),
                     "An internal database error occurred. Please try again later.".to_string(),
                 ),
-
             },
 
             Self::JsonDeserializationError(_) => (
@@ -48,21 +51,17 @@ impl ApiError for LogoutErrorResponse {
                 StatusCode::UNAUTHORIZED,
                 "MISSING_REFRESH_TOKEN".to_string(),
                 self.to_string(),
-                ),
+            ),
             LogoutErrorResponse::RefreshTokenInvalid => (
                 StatusCode::UNAUTHORIZED,
                 "REFRESH_TOKEN_INVALID".to_string(),
                 self.to_string(),
-            )
+            ),
         };
         Response {
             status,
             error,
             message,
         }
-    }
-
-    fn error_message(&self) -> String {
-        self.to_string()
     }
 }

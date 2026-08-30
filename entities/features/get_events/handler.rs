@@ -11,7 +11,7 @@ use validator::Validate;
 use crate::features::common::{AppState, UserData, api_response::HandlerResult};
 
 use super::{
-    dto::{GetEventsPagination, GetEventsResponse},
+    dto::GetEventsPagination,
     error::{GetEventsError, GetEventsErrorResponse},
     usecase::get_events_usecase,
 };

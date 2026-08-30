@@ -1,6 +1,5 @@
-use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
+use jsonwebtoken::{DecodingKey, TokenData, Validation, decode};
 use serde::{Deserialize, Serialize};
-use time::{Duration, OffsetDateTime};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct JWTClaims {

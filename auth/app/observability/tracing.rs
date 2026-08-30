@@ -10,13 +10,12 @@ pub fn init_traces(otel_collector_url: &str) -> SdkTracerProvider {
         .build()
         .expect("Failed to create trace exporter");
 
-    let provider = SdkTracerProvider::builder()
+    SdkTracerProvider::builder()
         .with_batch_exporter(exporter)
         .with_resource(get_resource())
         .with_sampler(Sampler::ParentBased(Box::new(Sampler::TraceIdRatioBased(
             1.0,
         ))))
         .with_id_generator(RandomIdGenerator::default())
-        .build();
-    provider
+        .build()
 }

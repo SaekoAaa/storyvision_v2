@@ -1,9 +1,6 @@
 use axum::Json;
+use axum::{http::StatusCode, response::IntoResponse};
 use serde_json::json;
-use {
-    axum::{http::StatusCode, response::IntoResponse},
-    serde::Serialize,
-};
 
 pub struct Response {
     pub status: StatusCode,

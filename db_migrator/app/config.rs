@@ -59,7 +59,7 @@ impl Environment {
         let migration_type: MigrationType = read_env("MIGRATION_TYPE")
             .map_or(1, |num| num.parse::<i32>().unwrap_or(1))
             .into();
-            
+
         let mysql_user = match var("MYSQL_USER") {
             Ok(user) => user,
             Err(_) => {
@@ -79,9 +79,9 @@ impl Environment {
         };
 
         let collector_url = var("COLLECTOR_URL").ok();
-        let with_tracing = var("WITH_TRACING").map_or(false, |t| t == "true");
-        let with_metrics = var("WITH_METRICS").map_or(false, |t| t == "true");
-        let json_logs = var("JSON_LOGS").map_or(false, |t| t == "true");
+        let with_tracing = var("WITH_TRACING").is_ok_and(|t| t == "true");
+        let with_metrics = var("WITH_METRICS").is_ok_and(|t| t == "true");
+        let json_logs = var("JSON_LOGS").is_ok_and(|t| t == "true");
 
         Ok(Self {
             database,

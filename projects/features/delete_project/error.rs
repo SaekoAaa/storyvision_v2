@@ -29,6 +29,10 @@ impl IntoResponse for DeleteProjectErrorResponse {
     }
 }
 impl ApiError for DeleteProjectErrorResponse {
+    fn error_message(&self) -> String {
+        self.to_string()
+    }
+
     fn error_response(&self) -> Response {
         let (status, error, message) = match self {
             Self::DeleteProjectError(err) => match err {
@@ -42,7 +46,7 @@ impl ApiError for DeleteProjectErrorResponse {
                     "NOT_FOUND_ERROR".to_string(),
                     user_response.to_string(),
                 ),
-                DeleteProjectError::DatabaseError(err) => (
+                DeleteProjectError::DatabaseError(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "INTERNAL_SERVER_ERROR".to_string(),
                     "An internal database error occurred. Please try again later.".to_string(),
@@ -54,9 +58,5 @@ impl ApiError for DeleteProjectErrorResponse {
             error,
             message,
         }
-    }
-
-    fn error_message(&self) -> String {
-        self.to_string()
     }
 }

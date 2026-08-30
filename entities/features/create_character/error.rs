@@ -1,5 +1,4 @@
-use axum::{Json, http::StatusCode, response::IntoResponse};
-use serde_json::json;
+use axum::{http::StatusCode, response::IntoResponse};
 use validator::ValidationErrors;
 
 use crate::features::common::api_error::{ApiError, Response};

@@ -16,8 +16,6 @@ use crate::observability::otel::get_resource;
 pub(crate) static REQUESTS_COUNTER: OnceLock<Counter<u64>> = OnceLock::new();
 pub(crate) static REQUESTS_LATENCY: OnceLock<Histogram<f64>> = OnceLock::new();
 
-
-
 pub async fn http_metrics_middleware(req: Request, next: Next) -> impl IntoResponse {
     let start = std::time::Instant::now();
 

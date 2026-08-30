@@ -72,7 +72,7 @@ pub async fn handler_register_user(
     let register_user_request = serial_data.deserialize()?;
     register_user_request
         .validate()
-        .map_err(|e| RegisterErrorResponse::ValidationError(validation_errors_to_json(e)))?;
+        .map_err(|e| RegisterErrorResponse::Validation(validation_errors_to_json(e)))?;
     let RegisterUserRequest { email, password } = register_user_request;
     let register_data = register_user(
         &app_state.pool,

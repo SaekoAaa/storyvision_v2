@@ -1,9 +1,14 @@
 use axum::middleware::from_fn_with_state;
-use tracing_subscriber::EnvFilter;
 use entities_service::features::common::AppState;
+use tracing_subscriber::EnvFilter;
 
 use test_user_data::insert_test_user_data;
 
+use config::Environment;
+use mw_validate_jwt::mw_validate_access_token;
+use neo4j::init_neo4j;
+use router::init_router;
+use shutdown::shutdown_task;
 use {
     axum_server::Handle,
     std::{
@@ -13,11 +18,6 @@ use {
     },
     tokio::select,
 };
-use config::Environment;
-use mw_validate_jwt::mw_validate_access_token;
-use neo4j::init_neo4j;
-use router::init_router;
-use shutdown::shutdown_task;
 
 pub mod config;
 pub mod mw_validate_jwt;
@@ -34,8 +34,7 @@ async fn main() {
     let env = Environment::load_env().expect("Loading environment variables");
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("info")),
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
         )
         .init();
 

@@ -1,22 +1,21 @@
-use std::net::SocketAddr;
-use std::sync::Arc;
-use axum::extract::{ConnectInfo, State};
-use axum::http::StatusCode;
-use axum::Json;
-use axum::response::IntoResponse;
-use axum_extra::extract::{CookieJar, JsonDeserializer};
-use axum_extra::extract::cookie::Cookie;
-use time::Duration;
-use utoipa::OpenApi;
-use validator::Validate;
 use crate::constants::REFRESH_TOKEN_ACCESS_PATH;
-use crate::features::common::api_response::HandlerResult;
 use crate::features::common::AuthState;
+use crate::features::common::api_response::HandlerResult;
 use crate::features::common::openapi::{BaseErrorResponseSchema, InternalErrorResponse};
 use crate::features::login_user::dto::{LoginUserRequest, LoginUserResponse};
 use crate::features::login_user::error::LoginErrorResponse;
-use crate::features::login_user::usecase::{login_user_usecase, LoginData};
-
+use crate::features::login_user::usecase::{LoginData, login_user_usecase};
+use axum::Json;
+use axum::extract::{ConnectInfo, State};
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum_extra::extract::cookie::Cookie;
+use axum_extra::extract::{CookieJar, JsonDeserializer};
+use std::net::SocketAddr;
+use std::sync::Arc;
+use time::Duration;
+use utoipa::OpenApi;
+use validator::Validate;
 
 #[derive(Debug, OpenApi)]
 #[openapi(paths(handler_login_user))]
@@ -51,14 +50,14 @@ pub async fn handler_login_user(
         refresh_token,
         access_token,
     } = login_user_usecase(
-            &email,
-            &password,
-            &app_state.saltstring,
-            &app_state.token_secret,
-            connect_info,
-            &app_state.pool
-        )
-        .await?;
+        &email,
+        &password,
+        &app_state.saltstring,
+        &app_state.token_secret,
+        connect_info,
+        &app_state.pool,
+    )
+    .await?;
     let token_jar = jar.add(
         Cookie::build(("refresh", refresh_token.to_string()))
             .http_only(true)

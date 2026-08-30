@@ -8,7 +8,7 @@ pub async fn db_healtcheck_handler(State(state): State<Arc<AuthState>>) -> impl 
     match get_db_health(&state.pool).await {
         Ok(msg) => {
             tracing::info!("Database_health {}", msg);
-            return StatusCode::OK;
+            StatusCode::OK
         }
         Err(err) => {
             tracing::error!("Database health check failed: {}", err);

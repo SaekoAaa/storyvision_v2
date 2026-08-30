@@ -5,7 +5,6 @@ use axum::{
     http::StatusCode,
     response::IntoResponse,
 };
-use futures::TryStreamExt;
 
 use crate::features::common::{AppState, UserData, api_response::HandlerResult};
 

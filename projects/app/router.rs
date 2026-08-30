@@ -2,7 +2,6 @@ use axum::routing::get;
 use projects_service::features::add_project_member::handler::add_project_member_handler;
 use projects_service::features::delete_project::handler::delete_project_handler;
 use projects_service::features::get_project_metadata::handler::get_project_metadata_handler;
-use projects_service::features::list_project_members;
 use projects_service::features::list_project_members::handler::list_project_members_handler;
 use projects_service::features::list_projects::handler::list_projects_handler;
 use projects_service::features::remove_project_member::handler::remove_member_from_project_handler;
@@ -11,7 +10,7 @@ use projects_service::features::{
     common::ProjectState, create_project::handler::create_project_handler,
 };
 use {
-    axum::{Router, http::StatusCode, routing::post},
+    axum::{Router, http::StatusCode},
     projects_service::constants::ROUTER_VERSION_PATH,
     std::sync::Arc,
     tower_http::{cors::CorsLayer, trace::TraceLayer},
@@ -19,10 +18,7 @@ use {
 
 pub fn init_router(state: Arc<ProjectState>) -> Router {
     Router::new()
-        .route(
-            "/healthcheck",
-            get(async move || StatusCode::OK),
-        )
+        .route("/healthcheck", get(async move || StatusCode::OK))
         .nest(
             ROUTER_VERSION_PATH,
             Router::new().nest(

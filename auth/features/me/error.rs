@@ -1,7 +1,6 @@
 use {
     crate::features::common::api_error::{ApiError, Response},
     axum::{http::StatusCode, response::IntoResponse},
-    axum_extra::extract::JsonDeserializerRejection,
 };
 
 #[derive(Debug, thiserror::Error)]

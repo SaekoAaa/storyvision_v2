@@ -22,11 +22,11 @@ pub enum UpdateProjectMetadataError {
 #[derive(Debug, thiserror::Error)]
 pub enum UpdateProjectMetadataErrorResponse {
     #[error("Error during project deletion: {0}")]
-    UpdateProjectMetadataError(#[from] UpdateProjectMetadataError),
+    UpdateProjectMetadata(#[from] UpdateProjectMetadataError),
     #[error("Failed to deserialize JSON: {0}")]
-    JsonDeserializationError(#[from] JsonDeserializerRejection),
+    JsonDeserialization(#[from] JsonDeserializerRejection),
     #[error("Validation error: {0}")]
-    ValidationError(#[from] ValidationErrors),
+    Validation(#[from] ValidationErrors),
 }
 
 impl IntoResponse for UpdateProjectMetadataErrorResponse {
@@ -37,7 +37,7 @@ impl IntoResponse for UpdateProjectMetadataErrorResponse {
 impl ApiError for UpdateProjectMetadataErrorResponse {
     fn error_response(&self) -> Response {
         let (status, error, message) = match self {
-            Self::UpdateProjectMetadataError(err) => match err {
+            Self::UpdateProjectMetadata(err) => match err {
                 UpdateProjectMetadataError::NotAProjectOwner => (
                     StatusCode::FORBIDDEN,
                     "NOT_A_PROJECT_OWNER".to_string(),
@@ -54,12 +54,12 @@ impl ApiError for UpdateProjectMetadataErrorResponse {
                     "An internal database error occurred. Please try again later.".to_string(),
                 ),
             },
-            Self::JsonDeserializationError(e) => (
+            Self::JsonDeserialization(e) => (
                 StatusCode::BAD_REQUEST,
                 "INVALID_JSON".to_string(),
                 e.to_string(),
             ),
-            Self::ValidationError(e) => (
+            Self::Validation(e) => (
                 StatusCode::BAD_REQUEST,
                 "VALIDATION_ERROR".to_string(),
                 e.to_string(),

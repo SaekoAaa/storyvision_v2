@@ -1,16 +1,4 @@
-use {
-    crate::{
-        constants,
-        features::me::error::GetUserError,
-        model::*,
-        features::crypto::{hash::hash_password, jwt::create_jwt_token},
-    },
-    argon2::password_hash::SaltString,
-    sha2::{Digest, Sha256},
-    sqlx::prelude::FromRow,
-    std::net::SocketAddr,
-    time::{Duration, OffsetDateTime},
-};
+use {crate::features::me::error::GetUserError, sqlx::prelude::FromRow};
 #[derive(FromRow)]
 pub struct GetUser {
     pub email: String,

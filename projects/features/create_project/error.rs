@@ -18,11 +18,11 @@ pub enum CreateProjectError {
 #[derive(Debug, thiserror::Error)]
 pub enum CreateProjectErrorResponse {
     #[error("Failed to create project: {0}")]
-    CreateProjectError(#[from] CreateProjectError),
+    CreateProject(#[from] CreateProjectError),
     #[error("Failed to deserialize JSON: {0}")]
-    JsonDeserializationError(#[from] JsonDeserializerRejection),
+    JsonDeserialization(#[from] JsonDeserializerRejection),
     #[error("Validation error: {0}")]
-    ValidationError(#[from] ValidationErrors),
+    Validation(#[from] ValidationErrors),
 }
 impl IntoResponse for CreateProjectErrorResponse {
     fn into_response(self) -> axum::response::Response {
@@ -32,7 +32,7 @@ impl IntoResponse for CreateProjectErrorResponse {
 impl ApiError for CreateProjectErrorResponse {
     fn error_response(&self) -> Response {
         let (status, error, message) = match self {
-            Self::CreateProjectError(err) => match err {
+            Self::CreateProject(err) => match err {
                 CreateProjectError::Db(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "DATABASE_ERROR".to_string(),
@@ -45,12 +45,12 @@ impl ApiError for CreateProjectErrorResponse {
                 ),
             },
 
-            Self::JsonDeserializationError(_) => (
+            Self::JsonDeserialization(_) => (
                 StatusCode::BAD_REQUEST,
                 "INVALID_JSON".to_string(),
                 "The provided JSON body is invalid or malformed.".to_string(),
             ),
-            Self::ValidationError(e) => (
+            Self::Validation(e) => (
                 StatusCode::BAD_REQUEST,
                 "VALIDATION_ERROR".to_string(),
                 e.to_string(),

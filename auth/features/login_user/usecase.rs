@@ -1,12 +1,11 @@
 use crate::constants::{ACCESS_EXPIRY_SECONDS, REFRESH_EXPIRY_DAYS};
-use crate::features::login_user::error::LoginError;
-use crate::model::{ProjectId, UserId};
 use crate::features::crypto::hash::hash_password;
 use crate::features::crypto::jwt::create_jwt_token;
+use crate::features::login_user::error::LoginError;
+use crate::model::{ProjectId, UserId};
 use argon2::password_hash::SaltString;
 use sha2::{Digest, Sha256};
 use sqlx::MySqlPool;
-use sqlx::prelude::FromRow;
 use std::net::SocketAddr;
 use time::{Duration, OffsetDateTime};
 
@@ -24,7 +23,7 @@ pub async fn login_user_usecase(
     connect_info: SocketAddr,
     pool: &MySqlPool,
 ) -> Result<LoginData, LoginError> {
-    let password_hash = hash_password(&password, salt_string)?;
+    let password_hash = hash_password(password, salt_string)?;
     let user_addr = connect_info.to_string();
     match sqlx::query_as(
         r#"
@@ -32,17 +31,15 @@ pub async fn login_user_usecase(
                 WHERE email = ? AND password_hash = ?
             "#,
     )
-    .bind(&email)
+    .bind(email)
     .bind(password_hash)
     .fetch_optional(pool)
     .await?
     {
-        None => {
-            Err(LoginError::NotFound {
-                user_response: "User not found".to_string(),
-                details: format!("Failed to find email: {}", &email),
-            })
-        }
+        None => Err(LoginError::NotFound {
+            user_response: "User not found".to_string(),
+            details: format!("Failed to find email: {}", &email),
+        }),
         Some(UserId { id }) => {
             let refresh_token = uuid::Uuid::new_v4().to_string();
             let refresh_token_hash = &format!("{:X}", Sha256::digest(refresh_token.as_bytes()));
@@ -73,7 +70,7 @@ pub async fn login_user_usecase(
                 project_list,
                 id,
                 Duration::seconds(ACCESS_EXPIRY_SECONDS),
-                &token_secret,
+                token_secret,
             )?;
             Ok(LoginData {
                 id,
