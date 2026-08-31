@@ -16,7 +16,7 @@ RUN --mount=type=bind,source=.,target=/app \
     cargo build --release --target-dir /target -p entities_service && \
     cp /target/release/entities_service /bin/server
 
-FROM alpine:3.18 AS final
+FROM alpine:3.24 AS final
 
 ARG UID=10001
 RUN adduser \
