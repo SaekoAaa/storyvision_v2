@@ -17,7 +17,7 @@ RUN --mount=type=bind,source=.,target=/app \
     cargo build --release --target-dir /target -p projects_service && \
     cp /target/release/projects_service /bin/server
 
-FROM alpine:3.18 AS final
+FROM alpine:3.24 AS final
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
