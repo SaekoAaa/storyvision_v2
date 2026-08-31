@@ -26,7 +26,7 @@ uuid = { version = "1.18.1", features = ["v4"] }
 validator = { version = "0.20.0", features = ["derive"] }
 opentelemetry = "0.31.0"
 opentelemetry_sdk = { version = "0.31.0", features = ["experimental_metrics_custom_reader", "metrics"] }
-opentelemetry-otlp = { version = "0.31.0", features = ["http-json"] }
+opentelemetry-otlp = { version = "0.32.0", features = ["http-json"] }
 tracing-opentelemetry = "0.32.0"
 
 [profile.release]
