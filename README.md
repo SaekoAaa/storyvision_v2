@@ -4,6 +4,9 @@ Storyvision is a project backend for building and exploring fictional worlds. It
 
 The repository is a Rust workspace made up of small, independently deployable services. The application is functional and has a complete local development stack, but it is still being hardened for automated delivery and production-like operation.
 
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/b2f0b766-a41d-4f51-9d0c-d2ff64b9894e" />
+*frontend concept
+
 ## What is implemented
 
 - User registration, login, refresh-token rotation, logout, and current-user lookup
