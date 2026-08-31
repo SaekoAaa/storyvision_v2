@@ -160,6 +160,20 @@ The pipeline uses SCM polling instead of a GitHub webhook. `pollSCM('H/5 * * * *
 
 The Docker socket grants the Jenkins container control over the host Docker daemon. This setup is intended for a trusted local CI host; do not run untrusted pipelines or fork pull requests with privileged credentials on it.
 
+#### Publish images to GitHub Container Registry
+
+The pipeline builds all service images on every discovered branch so Dockerfile changes are validated. Publishing is restricted to `master` and Git tag builds. Images use the Cargo package version plus the seven-character Git revision, for example `ghcr.io/saekoaaa/storyvision-auth:0.1.0-1ebaa5f`.
+
+Create a GitHub classic personal access token with `read:packages` and `write:packages`. In Jenkins, add it under **Manage Jenkins → Credentials → System → Global credentials** as **Username with password**:
+
+```text
+ID:       ghcr-publisher
+Username: your GitHub username
+Password: the GitHub token
+```
+
+The `Jenkinsfile` authenticates only inside the protected publish stage. Pull-request and feature-branch builds never receive this credential. Published images are available under the repository owner's **Packages** page; the OCI source label associates them with this repository.
+
 ### Task shortcuts
 
 The root `Taskfile.yaml` provides shortcuts for common operations:

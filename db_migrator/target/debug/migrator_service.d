@@ -1,1 +1,0 @@
-/Users/auyri/Projects/storyvisionv2/db_migrator/target/debug/migrator_service: /Users/auyri/Projects/storyvisionv2/db_migrator/app/infrastructure/load_env.rs /Users/auyri/Projects/storyvisionv2/db_migrator/app/infrastructure/mod.rs /Users/auyri/Projects/storyvisionv2/db_migrator/app/main.rs /Users/auyri/Projects/storyvisionv2/db_migrator/lib.rs
