@@ -132,6 +132,34 @@ docker compose --profile all down
 
 Add `--volumes` only when you intentionally want to delete local database and Grafana data.
 
+### Start Jenkins
+
+Jenkins has its own Compose profile and does not start with the application stack. Give the container access to the host Docker socket group and start it with:
+
+```bash
+DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)" \
+docker compose --profile ci up -d --build jenkins
+```
+
+Or use the Taskfile shortcut:
+
+```bash
+task jenkins
+```
+
+Open Jenkins at `http://localhost:8080`. Retrieve the one-time setup password with:
+
+```bash
+docker compose --profile ci exec jenkins \
+  cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+Jenkins state and plugins persist in the `jenkins_home` volume. The repository-root `Jenkinsfile` defines version discovery, formatting, Clippy, tests, and Compose validation. Configure it as a GitHub Multibranch Pipeline so Jenkins checks out the exact branch or pull-request revision.
+
+The pipeline uses SCM polling instead of a GitHub webhook. `pollSCM('H/5 * * * *')` checks known branches approximately every five minutes, with Jenkins choosing a stable offset through `H`. In the Multibranch Pipeline configuration, also enable **Scan Multibranch Pipeline Triggers → Periodically if not otherwise run** so Jenkins discovers new branches and pull requests; a 5–15 minute interval is appropriate for this pet project.
+
+The Docker socket grants the Jenkins container control over the host Docker daemon. This setup is intended for a trusted local CI host; do not run untrusted pipelines or fork pull requests with privileged credentials on it.
+
 ### Task shortcuts
 
 The root `Taskfile.yaml` provides shortcuts for common operations:

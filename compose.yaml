@@ -221,6 +221,30 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
 
+  # --- Continuous Integration ---
+  jenkins:
+    build:
+      context: .
+      dockerfile: ./jenkins/Dockerfile
+    image: storyvision/jenkins:2.579
+    container_name: storyvision_jenkins
+    profiles: ["ci"]
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    group_add:
+      - "${DOCKER_GID:-999}"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/login"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
 volumes:
   mysql_data:
   neo4j_data:
@@ -228,3 +252,4 @@ volumes:
   neo4j_import:
   neo4j_plugins:
   grafana_data:
+  jenkins_home:

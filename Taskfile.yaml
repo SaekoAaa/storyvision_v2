@@ -50,24 +50,31 @@ tasks:
       - docker compose --profile monitoring up -d
     desc: Start observability tools (OTel, Jaeger, Prometheus)
 
+  start_jenkins:
+    aliases:
+      - jenkins
+      - ci
+    desc: Build and start Jenkins with access to the host Docker daemon
+    preconditions:
+      - sh: command -v docker >/dev/null
+        msg: Docker is not installed
+      - sh: test -S /var/run/docker.sock
+        msg: Docker socket is unavailable; make sure the Docker daemon is running
+    cmds:
+      - |
+        DOCKER_GID=$(stat -c '%g' /var/run/docker.sock) \
+        docker compose --profile ci up -d --build jenkins
+
   k8s_apply_secrets:
     desc: Create or update K8s secrets from local env file
-    cmds:
-      - kubectl create secret generic mysql-secret \
-        --from-env-file=.secrets/mysql.env \
-        --dry-run=client \
-        -o yaml |
-        kubectl apply -f -
-      - kubectl describe secret mysql-secret
     vars:
       NAMESPACE: '{{default "default" .NAMESPACE}}'
-      MYSQL_ENV: '{{default "k8s/.secrets/mysql.env/" .MYSQL_ENV}}'
+      MYSQL_ENV: '{{default "k8s/.secrets/mysql.env" .MYSQL_ENV}}'
     preconditions:
       - sh: command -v kubectl >/dev/null
         msg: kubectl is not installed
       - sh: test -f "{{.MYSQL_ENV}}"
-        msg: "{{.MYSQL_ENV}} is missing; copy it
-        from .secrets/mysql.env.example"
+        msg: "{{.MYSQL_ENV}} is missing; copy it from k8s/.secrets/mysql.env.example"
       - sh: kubectl cluster-info >/dev/null
         msg: kubectl cannot connect to the current
         cluster
