@@ -4,5 +4,6 @@ git
 github-branch-source
 github-checks
 pipeline-model-definition
+timestamper
 workflow-aggregator
 workflow-multibranch
