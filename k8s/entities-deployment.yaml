@@ -1,22 +1,21 @@
-# project-service-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: project-service
+  name: entities-service
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: project-service
+      app: entities-service
   template:
     metadata:
       labels:
-        app: project-service
+        app: entities-service
     spec:
       containers:
-        - name: project-service
-          image: projects-service:latest
-          imagePullPolicy: Never
+        - name: entities-service
+          image: ghcr.io/saekoaaa/storyvision-entities:0.1.0-bd5b117
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4000
           env:
@@ -52,10 +51,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: project-service
+  name: entities-service
 spec:
   selector:
-    app: project-service
+    app: entities-service
   ports:
     - port: 4000
       targetPort: 4000

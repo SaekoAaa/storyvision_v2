@@ -1,0 +1,22 @@
+releases:
+  - name: mysql
+    namespace: default
+    chart: helm/charts/mysql
+    atomic: true
+    cleanupOnFail: true
+    wait: true
+    timeout: 600
+    values:
+      - helm/values/mysql.yaml.gotmpl
+
+  - name: nginx-ingress
+    namespace: nginx-ingress
+    createNamespace: true
+    chart: oci://ghcr.io/nginx/charts/nginx-ingress
+    version: 2.6.4
+    atomic: true
+    cleanupOnFail: true
+    wait: true
+    timeout: 600
+    values:
+      - helm/values/nginx-ingress.yaml

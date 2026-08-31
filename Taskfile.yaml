@@ -86,3 +86,56 @@ tasks:
           --dry-run=client \
           --output=yaml |
         kubectl apply --filename=-
+
+  helmfile_apply:
+    aliases:
+      - infra
+    desc: Install or update local MySQL and NGINX Ingress with Helmfile
+    vars:
+      ENV_FILE: '{{default "k8s/.secrets/mysql.env" .ENV_FILE}}'
+    dotenv:
+      - "{{.ENV_FILE}}"
+    preconditions:
+      - sh: command -v helm >/dev/null
+        msg: Helm is not installed
+      - sh: command -v helmfile >/dev/null
+        msg: Helmfile is not installed
+      - sh: test -f "{{.ENV_FILE}}"
+        msg: "{{.ENV_FILE}} is missing; copy it from k8s/.secrets/mysql.env.example"
+      - sh: kubectl cluster-info >/dev/null
+        msg: kubectl cannot connect to the current cluster
+    cmds:
+      - helmfile sync
+
+  helmfile_diff:
+    desc: Preview local MySQL and NGINX Ingress changes
+    vars:
+      ENV_FILE: '{{default "k8s/.secrets/mysql.env" .ENV_FILE}}'
+    dotenv:
+      - "{{.ENV_FILE}}"
+    preconditions:
+      - sh: command -v helm >/dev/null
+        msg: Helm is not installed
+      - sh: command -v helmfile >/dev/null
+        msg: Helmfile is not installed
+      - sh: helm plugin list | grep -q '^diff[[:space:]]'
+        msg: Helm Diff is not installed; run helmfile init
+      - sh: test -f "{{.ENV_FILE}}"
+        msg: "{{.ENV_FILE}} is missing; copy it from k8s/.secrets/mysql.env.example"
+    cmds:
+      - helmfile diff
+
+  helmfile_destroy:
+    desc: Remove local MySQL and NGINX Ingress Helm releases
+    vars:
+      ENV_FILE: '{{default "k8s/.secrets/mysql.env" .ENV_FILE}}'
+    dotenv:
+      - "{{.ENV_FILE}}"
+    preconditions:
+      - sh: command -v helmfile >/dev/null
+        msg: Helmfile is not installed
+      - sh: test -f "{{.ENV_FILE}}"
+        msg: "{{.ENV_FILE}} is missing; copy it from k8s/.secrets/mysql.env.example"
+    prompt: This removes the MySQL and NGINX releases. Continue?
+    cmds:
+      - helmfile destroy

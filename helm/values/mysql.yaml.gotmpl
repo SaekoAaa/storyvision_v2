@@ -1,0 +1,22 @@
+# Keep this name stable: Storyvision services connect to mysql-service:3306.
+nameOverride: mysql-service
+
+auth:
+  createDatabase: true
+  database: {{ requiredEnv "MYSQL_DATABASE" | quote }}
+  username: {{ requiredEnv "MYSQL_USER" | quote }}
+  password: {{ requiredEnv "MYSQL_PASSWORD" | quote }}
+  rootPassword: {{ requiredEnv "MYSQL_ROOT_PASSWORD" | quote }}
+
+persistence:
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

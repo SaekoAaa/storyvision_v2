@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "storyvision-mysql.name" . }}
+  labels:
+    {{- include "storyvision-mysql.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "storyvision-mysql.name" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "storyvision-mysql.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "storyvision-mysql.labels" . | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: mysql
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: mysql
+              containerPort: {{ .Values.service.port }}
+          envFrom:
+            - secretRef:
+                name: {{ include "storyvision-mysql.name" . }}-auth
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - mysqladmin ping --host=127.0.0.1 --user=root --password="$MYSQL_ROOT_PASSWORD"
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - mysqladmin ping --host=127.0.0.1 --user=root --password="$MYSQL_ROOT_PASSWORD"
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - mysqladmin ping --host=127.0.0.1 --user=root --password="$MYSQL_ROOT_PASSWORD"
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          {{- toYaml .Values.persistence.accessModes | nindent 10 }}
+        {{- with .Values.persistence.storageClass }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}

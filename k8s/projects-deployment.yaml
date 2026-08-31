@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth
+  name: project-service
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: auth
+      app: project-service
   template:
     metadata:
       labels:
-        app: auth
+        app: project-service
     spec:
       containers:
-        - name: auth
-          image: ghcr.io/saekoaaa/storyvision-migrator:0.1.0-bd5b117
+        - name: project-service
+          image: ghcr.io/saekoaaa/storyvision-projects:0.1.0-bd5b117
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4000
@@ -45,14 +45,16 @@ spec:
               value: "mysql-service"
             - name: APP_ADDRESS
               value: "0.0.0.0"
+            - name: TEST_USER_DATA
+              value: "true"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-service
+  name: project-service
 spec:
   selector:
-    app: auth
+    app: project-service
   ports:
     - port: 4000
       targetPort: 4000

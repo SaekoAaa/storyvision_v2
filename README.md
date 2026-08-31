@@ -56,8 +56,8 @@ Application code follows a feature-based structure. A feature normally owns its 
 - SQLx and MySQL
 - `neo4rs` and Neo4j with APOC
 - JWT and Argon2
-- Docker, Docker Compose, and Nginx
-- Kubernetes manifests
+- Docker and Docker Compose
+- Kubernetes manifests, Helm, Helmfile, and NGINX Ingress Controller
 - OpenTelemetry Collector, Prometheus, Grafana, and Jaeger
 - Utoipa and RapiDoc
 
@@ -70,7 +70,7 @@ The Rust toolchain is pinned in `rust-toolchain.toml`; rustup installs the requi
 - Docker with Docker Compose
 - Rustup when running services or checks outside containers
 - [Task](https://taskfile.dev/) if you want to use the optional command shortcuts
-- `kubectl` only when working with the Kubernetes manifests
+- `kubectl`, Helm, and Helmfile when working with Kubernetes
 
 ### Configure the environment
 
@@ -184,6 +184,7 @@ task nginx       # Gateway and its required services
 task migrate     # Apply the default MySQL migration
 task migrate -- 3 # Apply migrations and development seed data
 task monitoring  # OTel Collector, Prometheus, Grafana, and Jaeger
+task infra       # MySQL and NGINX Ingress in the current Kubernetes cluster
 ```
 
 ### Run a service with Cargo
@@ -243,7 +244,7 @@ Formatting and strict Clippy checks currently pass. Automated coverage is still 
 
 ## Kubernetes
 
-The `k8s/` directory contains development manifests for MySQL, migrations, Auth, Projects, and ingress routing. They are a starting point, not a production deployment.
+Helmfile manages the local MySQL and NGINX Ingress infrastructure. MySQL uses the project-owned `helm/charts/mysql` chart and the official pinned MySQL image. NGINX uses the pinned upstream OCI chart. The `k8s/` directory contains the migrator, application workloads, services, and ingress routes.
 
 Secret values are not stored in Git. Create `k8s/.secrets/mysql.env` from the provided example and apply it through the Taskfile:
 
@@ -253,6 +254,32 @@ task k8s_apply_secrets MYSQL_ENV=k8s/.secrets/mysql.env
 ```
 
 Never commit the populated environment file. Production deployment still needs immutable registry images, probes, resource policies, external secret management, database backups, and environment-specific configuration.
+
+Preview infrastructure changes after installing the Helm Diff plugin with `helmfile init`:
+
+```bash
+task helmfile_diff
+```
+
+Install or update MySQL and NGINX Ingress in the current Kubernetes context:
+
+```bash
+task infra
+```
+
+The MySQL release provides `mysql-service:3306`, which is the address expected by Auth, Projects, and the migrator. On Minikube, obtain the NGINX endpoint with:
+
+```bash
+minikube service nginx-ingress-controller --namespace nginx-ingress --url
+```
+
+Removing the releases requires confirmation:
+
+```bash
+task helmfile_destroy
+```
+
+The MySQL StatefulSet PVC is intentionally retained by Kubernetes after release removal. Delete it separately only when database data should be permanently discarded.
 
 ## Current project state
 
