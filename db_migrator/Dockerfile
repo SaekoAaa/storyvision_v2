@@ -17,7 +17,7 @@ RUN --mount=type=bind,source=.,target=/app \
     cargo build --release --target-dir /target -p migrator_service && \
     cp /target/release/migrator_service /bin/server
 
-FROM alpine:3.18 AS final
+FROM alpine:3.24 AS final
 
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001
